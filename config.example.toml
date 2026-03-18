@@ -1,0 +1,41 @@
+# InvisWind Configuration File
+# This file is automatically created in: %APPDATA%\InvisWind\config.toml
+
+[hotkeys]
+# Hotkey for taking screenshots
+screenshot = "Ctrl+Shift+S"
+
+# Hotkey for hiding the active window
+hide_window = "Ctrl+Shift+H"
+
+# Hotkey for showing the GUI
+show_gui = "Ctrl+Shift+I"
+
+[ui]
+# Use dark theme (true/false)
+dark_theme = true
+
+# Show desktop preview in GUI (true/false)
+show_preview = false
+
+# Hide windows from taskbar and Alt+Tab (true/false)
+hide_from_taskbar = false
+
+# Window size [width, height]
+window_size = [320.0, 540.0]
+
+# Renderer: "auto", "glow" (OpenGL), "wgpu" (Vulkan/DX12)
+# auto = automatically selects best renderer
+# glow = OpenGL (better compatibility, recommended for Windows)
+# wgpu = Vulkan/DX12 (modern, better for new hardware)
+renderer = "auto"
+
+[behavior]
+# Automatically refresh window list when GUI gains focus (true/false)
+auto_refresh = true
+
+# Refresh interval in milliseconds
+refresh_interval_ms = 1000
+
+# Minimize to system tray instead of taskbar (true/false)
+minimize_to_tray = false
