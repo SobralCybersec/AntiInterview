@@ -23,6 +23,7 @@ pub struct UiSettings {
     pub show_preview: bool,
     pub hide_from_taskbar: bool,
     pub window_size: (f32, f32),
+    pub banner_url: Option<String>,
 }
 
 impl Default for UiSettings {
@@ -32,6 +33,7 @@ impl Default for UiSettings {
             show_preview: false,
             hide_from_taskbar: false,
             window_size: (320.0, 540.0),
+            banner_url: None,
         }
     }
 }

@@ -172,6 +172,21 @@ impl AntiInterviewApp {
     }
 
     fn render_banner(&mut self, ui: &mut egui::Ui, _ctx: &egui::Context) {
+        if let Some(banner_url) = &self.state.config().ui.banner_url {
+            let width = ui.available_width();
+            let height = 150.0;
+            
+            ui.vertical_centered(|ui| {
+                ui.add(
+                    egui::Image::from_uri(banner_url)
+                        .fit_to_exact_size(Vec2::new(width, height))
+                );
+            });
+            ui.separator();
+            ui.add_space(SPACING);
+            return;
+        }
+        
         #[cfg(feature = "video")]
         if let Some(player) = &mut self.video_player {
             let width = ui.available_width();
@@ -210,7 +225,7 @@ impl AntiInterviewApp {
         } else {
             ui.vertical_centered(|ui| {
                 ui.add_space(10.0);
-                ui.heading(RichText::new("🎯 Anti-Interview").size(22.0));
+                ui.heading(RichText::new("Anti-Interview").size(22.0));
                 ui.label(RichText::new("Oculte janelas durante compartilhamento de tela").size(11.0).color(Color32::GRAY));
                 ui.add_space(10.0);
             });
