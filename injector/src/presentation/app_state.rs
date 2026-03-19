@@ -194,7 +194,7 @@ impl AppState {
 
     pub fn update_capture_texture(&mut self, ctx: &Context) {
         self.frame_counter += 1;
-        if self.frame_counter % 2 != 0 {
+        if !self.frame_counter.is_multiple_of(2) {
             return;
         }
 

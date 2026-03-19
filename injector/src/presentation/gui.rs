@@ -175,7 +175,9 @@ impl AntiInterviewApp {
         #[cfg(feature = "video")]
         if let Some(player) = &mut self.video_player {
             let width = ui.available_width();
-            let size = [width, 100.0];
+            let aspect_ratio = 16.0 / 9.0;
+            let height = (width / aspect_ratio).min(150.0);
+            let size = [width, height];
             
             ui.vertical_centered(|ui| {
                 player.ui(ui, size);
@@ -195,7 +197,7 @@ impl AntiInterviewApp {
             let texture = &self.gif_frames[self.gif_frame_index];
             let width = ui.available_width();
             let aspect_ratio = texture.size()[0] as f32 / texture.size()[1] as f32;
-            let height = (width / aspect_ratio).min(100.0);
+            let height = (width / aspect_ratio).min(150.0);
             
             ui.vertical_centered(|ui| {
                 ui.add(

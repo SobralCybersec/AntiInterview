@@ -71,3 +71,91 @@ impl Window {
         self.title.to_lowercase().contains(&filter.to_lowercase())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_window_id_creation() {
+        let id = WindowId::new(12345);
+        assert_eq!(id.value(), 12345);
+    }
+
+    #[test]
+    fn test_process_id_creation() {
+        let pid = ProcessId::new(9876);
+        assert_eq!(pid.value(), 9876);
+    }
+
+    #[test]
+    fn test_window_creation() {
+        let window = Window::new(
+            WindowId::new(1),
+            "Test Window".to_string(),
+            ProcessId::new(100),
+            false,
+        );
+        assert_eq!(window.id().value(), 1);
+        assert_eq!(window.title(), "Test Window");
+        assert_eq!(window.process_id().value(), 100);
+        assert!(!window.is_hidden());
+    }
+
+    #[test]
+    fn test_window_set_hidden() {
+        let mut window = Window::new(
+            WindowId::new(1),
+            "Test".to_string(),
+            ProcessId::new(100),
+            false,
+        );
+        assert!(!window.is_hidden());
+        window.set_hidden(true);
+        assert!(window.is_hidden());
+    }
+
+    #[test]
+    fn test_window_matches_filter_empty() {
+        let window = Window::new(
+            WindowId::new(1),
+            "Chrome Browser".to_string(),
+            ProcessId::new(100),
+            false,
+        );
+        assert!(window.matches_filter(""));
+    }
+
+    #[test]
+    fn test_window_matches_filter_case_insensitive() {
+        let window = Window::new(
+            WindowId::new(1),
+            "Chrome Browser".to_string(),
+            ProcessId::new(100),
+            false,
+        );
+        assert!(window.matches_filter("chrome"));
+        assert!(window.matches_filter("CHROME"));
+        assert!(window.matches_filter("browser"));
+    }
+
+    #[test]
+    fn test_window_matches_filter_no_match() {
+        let window = Window::new(
+            WindowId::new(1),
+            "Chrome Browser".to_string(),
+            ProcessId::new(100),
+            false,
+        );
+        assert!(!window.matches_filter("firefox"));
+    }
+
+    #[test]
+    fn test_window_id_equality() {
+        let id1 = WindowId::new(123);
+        let id2 = WindowId::new(123);
+        let id3 = WindowId::new(456);
+        assert_eq!(id1, id2);
+        assert_ne!(id1, id3);
+    }
+}

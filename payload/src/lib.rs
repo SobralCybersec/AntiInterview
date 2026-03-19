@@ -14,7 +14,7 @@ pub extern "system" fn SetWindowVisibility(hwnd: HWND, hide: bool) -> bool {
         WDA_NONE
     };
     let result = unsafe { SetWindowDisplayAffinity(hwnd, dwaffinity) };
-    return !result.is_err();
+    result.is_ok()
 }
 
 #[unsafe(no_mangle)]

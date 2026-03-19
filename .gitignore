@@ -10,6 +10,8 @@ Cargo.lock
 *.swp
 *.swo
 *~
+.amazonq/
+.github
 
 # OS
 .DS_Store

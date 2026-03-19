@@ -62,3 +62,61 @@ pub struct Configuration {
     #[serde(default)]
     pub behavior: Behavior,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_hotkeys_default() {
+        let hotkeys = Hotkeys::default();
+        assert_eq!(hotkeys.screenshot, "Ctrl+Shift+S");
+        assert_eq!(hotkeys.hide_window, "Ctrl+Shift+H");
+        assert_eq!(hotkeys.show_gui, "Ctrl+Shift+I");
+    }
+
+    #[test]
+    fn test_ui_settings_default() {
+        let ui = UiSettings::default();
+        assert!(ui.dark_theme);
+        assert!(!ui.show_preview);
+        assert!(!ui.hide_from_taskbar);
+        assert_eq!(ui.window_size, (320.0, 540.0));
+    }
+
+    #[test]
+    fn test_behavior_default() {
+        let behavior = Behavior::default();
+        assert!(behavior.auto_refresh);
+        assert_eq!(behavior.refresh_interval_ms, 1000);
+        assert!(!behavior.minimize_to_tray);
+    }
+
+    #[test]
+    fn test_configuration_default() {
+        let config = Configuration::default();
+        assert_eq!(config.hotkeys.screenshot, "Ctrl+Shift+S");
+        assert!(config.ui.dark_theme);
+        assert!(config.behavior.auto_refresh);
+    }
+
+    #[test]
+    fn test_configuration_serialization() {
+        let config = Configuration::default();
+        let serialized = toml::to_string(&config).unwrap();
+        assert!(serialized.contains("screenshot"));
+        assert!(serialized.contains("dark_theme"));
+    }
+
+    #[test]
+    fn test_configuration_deserialization() {
+        let toml_str = r#"
+            [hotkeys]
+            screenshot = "Ctrl+S"
+            hide_window = "Ctrl+H"
+            show_gui = "Ctrl+I"
+        "#;
+        let config: Configuration = toml::from_str(toml_str).unwrap();
+        assert_eq!(config.hotkeys.screenshot, "Ctrl+S");
+    }
+}
