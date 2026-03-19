@@ -11,7 +11,10 @@ Cargo.lock
 *.swo
 *~
 .amazonq/
+.github/
+.amazonq
 .github
+.gitingore
 
 # OS
 .DS_Store
