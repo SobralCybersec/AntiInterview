@@ -1,7 +1,7 @@
 <div align="center">
 
 <h1 align="center">
-  <img src="https://i.imgur.com/dGls2xX.png" width="50" />
+  <img src="https://i.imgur.com/Yb7yCeJ.png" width="30" />
   Anti-Interview
 </h1>
 
@@ -17,9 +17,12 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 
 * **Ocultação de Janelas**: Oculte janelas específicas das APIs de captura de tela
 * **Bandeja do Sistema**: Minimize para a bandeja com ícone nativo
-* **Visualização ao Vivo**: Preview em tempo real com captura D3D11
+* **Visualização ao Vivo**: Preview em tempo real com captura de tela
+* **Menu Animado**: Menu lateral expansível com animação suave
+* **Temas**: Alterne entre tema claro e escuro
 * **Atalhos**: Teclas de atalho personalizáveis
 * **Multi-Monitor**: Suporte completo para múltiplos monitores
+* **Payloads Avançados**: 12 funções de manipulação de janelas
 * **Arquitetura DDD**: Código limpo, manutenível e pronto para produção
 * **Abstrações Zero-Cost**: Implementação Rust de alta performance
 * **Auto-Atualização**: Atualização automática da lista de janelas
@@ -36,7 +39,6 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 
 * Rust 1.70+
 * Windows API (Win32)
-* Captura de Tela D3D11
 * Injeção de DLL (dll-syringe)
 * Framework egui
 * Integração com Bandeja do Sistema
@@ -44,25 +46,9 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 ---
 
 <h1 align="center">
-  <img src="https://cdn-icons-png.flaticon.com/512/1157/1157109.png" width="30"/> Arquitetura
+  <img src="https://i.imgur.com/dwyUWDH.gif" width="50" />
+  Demonstração:
 </h1>
-
-<div align="center">
-
-Construído com princípios de **Domain-Driven Design (DDD)** e arquitetura limpa:
-
-```
-Camada de Domínio       → Entidades e regras de negócio
-Camada de Aplicação     → Casos de uso e interfaces  
-Camada de Infraestrutura → Windows API, D3D11, File I/O, Tray
-Camada de Apresentação   → GUI com gerenciamento de estado
-```
-
-</div>
-
----
-
-## O que faz?
 
 Durante entrevistas online ou reuniões, oculte aplicações específicas da captura de tela enquanto continua usando-as normalmente.
 
@@ -78,59 +64,54 @@ Janelas selecionadas são ocultadas das APIs de captura de tela, tornando-as inv
 **Compatível com**: Zoom, MS Teams, Discord, OBS e qualquer aplicação que use APIs de captura de tela do Windows.
 
 ---
+<h1 align="center">
+  <img src="https://i.imgur.com/PFZmPWb.gif" width="30" />
+  Uso:
+</h1>
 
-## Detalhes Técnicos
+### Início Rápido | Instalação
 
-### Tecnologia Principal
+1. Execute `anti-interview.exe` como administrador (Baixe os binários primeiro)
+2. Navegue pelo menu lateral:
+   - **Início**: Visão geral e acesso rápido
+   - **Janelas**: Gerenciar janelas ocultas
+   - **Configurações**: Personalizar comportamento
+   - **Créditos**: Informações sobre o projeto
+3. Selecione as janelas para ocultar da lista
+4. Inicie sua sessão de compartilhamento de tela
+5. Janelas ocultas não aparecerão na tela compartilhada
 
-Usa injeção de DLL para chamar [SetWindowDisplayAffinity](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity) com flag `WDA_EXCLUDEFROMCAPTURE`.
+### Menu Lateral
 
-### Performance
+- Clique no botão **▶/◀** para expandir/recolher o menu
+- Menu expandido mostra rótulos de texto
+- Menu recolhido mostra apenas ícones com tooltips
 
-- Abstrações zero-cost
-- Alocações mínimas de memória
-- Iteradores eficientes
-- Buffers pré-alocados
-- Captura D3D11 otimizada
+### Gerenciar Janelas
 
-### Qualidade de Código
+1. Vá para a seção **Janelas**
+2. Use o filtro para buscar janelas específicas
+3. Marque as caixas de seleção para ocultar janelas
+4. Janelas ocultas ficam invisíveis para captura de tela
+5. Preview mostra como outros verão sua tela
 
-- Sem `unwrap()` ou `expect()` em produção
-- Tratamento adequado de erros com `Result`
-- Princípio da Responsabilidade Única
-- Inversão de Dependência
-- Código auto-documentado
+### Configurações
 
----
+#### Interface
+- **Tema Escuro**: Alterna entre tema claro e escuro
+- **Ocultar de Alt+Tab**: Remove janelas da lista de tarefas
+- **Mostrar Preview**: Exibe preview da área de trabalho
 
-## Instalação
+#### Comportamento de Janelas
+- **Ignorar Mouse**: Janelas ocultas ficam transparentes ao clique
 
-### Guia Rápido
-
-Veja o [Guia Rápido de Configuração](./QUICK_START.md) para instruções passo a passo.
-
-### Requisitos
-
-- Windows 10 v2004 ou superior
-- Privilégios de administrador para injeção de DLL
-
-### Download
-
-Baixe a versão mais recente na página de [Releases](https://github.com/yourusername/anti-interview/releases).
-
-### Aviso de Antivírus
-
-Este software pode acionar avisos de antivírus devido às técnicas de injeção de DLL. Isso é um falso positivo e pode ser ignorado com segurança.
-
----
-
-## Uso
-
-1. Execute `anti-interview.exe`
-2. Selecione as janelas para ocultar da lista
-3. Inicie sua sessão de compartilhamento de tela
-4. Janelas ocultas não aparecerão na tela compartilhada
-5. Minimize para a bandeja do sistema para operação em segundo plano
+#### Testes de Payload
+Funções experimentais para testar manipulação de janelas:
+- **Minimizar/Maximizar/Restaurar**: Controle de estado da janela
+- **Sempre no Topo**: Mantém janela acima de outras
+- **Piscar na Barra**: Chama atenção na barra de tarefas
+- **Opacidade**: Ajusta transparência (0-255)
+- **Ocultar Cursor**: Esconde o cursor do mouse (experimental)
 
 ### Atalhos
 
@@ -149,67 +130,21 @@ Este software pode acionar avisos de antivírus devido às técnicas de injeçã
 
 ---
 
-## Configuração
-
-Arquivo de configuração: `%APPDATA%\AntiInterview\config.toml`
-
-```toml
-[hotkeys]
-screenshot = "Ctrl+Shift+S"
-hide_window = "Ctrl+Shift+H"
-show_gui = "Ctrl+Shift+I"
-
-[ui]
-dark_theme = true
-show_preview = false
-hide_from_taskbar = false
-window_size = [320.0, 540.0]
-
-[behavior]
-auto_refresh = true
-refresh_interval_ms = 1000
-minimize_to_tray = true
-```
-
----
-
-## Compilando do Código Fonte
-
-### Pré-requisitos
-
-- Rust 1.70 ou superior
-- Windows SDK
-
-### Passos de Compilação
-
-```bash
-git clone https://github.com/yourusername/anti-interview.git
-cd anti-interview
-cargo build --release
-```
-
-O executável estará em `target/release/anti-interview.exe`
-
-### Executar Testes
-
-```bash
-cargo test --workspace
-```
-
-
----
-
 <h1 align="center">
   <img src="https://i.imgur.com/O7HwCZt.gif" width="30"/> Roadmap
 </h1>
 
 * [x] Ocultação de janelas com injeção de DLL
 * [x] Integração com bandeja do sistema
-* [x] Preview de captura de tela D3D11
+* [x] Preview de captura de tela
 * [x] Suporte multi-monitor
 * [x] Refatoração com arquitetura DDD
 * [x] Gerenciamento de configuração
 * [x] Banner animado com GIF
+* [x] Menu lateral animado expansível
+* [x] Sistema de temas (claro/escuro)
+* [x] 12 funções de payload para manipulação de janelas
+* [x] Seção de créditos
 * [ ] UI de customização de atalhos
 * [ ] Perfis de janelas
 * [ ] Regras de auto-ocultação
@@ -242,3 +177,10 @@ cargo test --workspace
 **Framework egui**: [egui](https://github.com/emilk/egui)  <img src="https://go-skill-icons.vercel.app/api/icons?i=rust&size=32" width="40" />
 
 </h2>
+
+<h1 align="center">Créditos</h1>
+
+<p align="center">
+  <strong>Desenvolvido por:</strong><br>
+  Matheus & Pyetrah<br>
+</p>

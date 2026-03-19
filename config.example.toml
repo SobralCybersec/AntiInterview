@@ -21,6 +21,12 @@ show_preview = false
 # Hide windows from taskbar and Alt+Tab (true/false)
 hide_from_taskbar = false
 
+# Ignore mouse input on hidden windows (click-through) (true/false)
+ignore_mouse = false
+
+# Banner URL (optional) - can be local file:// or remote https://
+banner_url = "https://i.imgur.com/kxx8y9P.gif"
+
 # Window size [width, height]
 window_size = [320.0, 540.0]
 
