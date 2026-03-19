@@ -711,3 +711,84 @@ When generating Rust code:
 8. Do not generate verbose AI-style code.
 9. Always consider zero-cost abstractions.
 10. Use tracing for logging, never println!.
+
+
+---
+
+# 21. Issue Management (MANDATORY)
+
+All bugs, features, and improvements MUST be tracked via issues.
+
+## Issue Creation Rules
+
+- Create issue document before implementing fix
+- Issue format: ISSUE_XXX_DESCRIPTION.md
+- Place in project root directory
+- No emojis in issue documents
+- Professional technical writing only
+
+## Issue Structure
+
+```markdown
+# Issue: Brief Title
+
+## Description
+Detailed description of the problem
+
+## Current Behavior
+What currently happens
+
+## Expected Behavior
+What should happen
+
+## Technical Details
+- File: path/to/file
+- Function: function_name()
+- Current value: X
+- Target value: Y
+
+## Solution
+1. Step 1
+2. Step 2
+
+## Files Modified
+- file1.rs - Lines X-Y
+
+## Status
+Open/In Progress/Closed
+
+## Priority
+Low/Medium/High/Critical
+```
+
+## Commit Message Rules
+
+- Must reference issue: "Fix: Description (Closes ISSUE_XXX)"
+- Update issue status after commit
+- Keep commit messages concise and descriptive
+
+## Example Workflow
+
+1. Create ISSUE_001_BANNER_RESOLUTION.md
+2. Implement fix
+3. Commit: "Fix: Banner resolution increased to 150px (Closes ISSUE_001)"
+4. Update issue status to Closed
+
+---
+
+# 22. Final Instruction for AI
+
+When generating Rust code:
+
+1. Follow Rust idioms strictly.
+2. Never use unwrap() or expect() in production.
+3. Use proper error handling with Result and ?.
+4. Prefer borrowing over cloning.
+5. Use async/await with tokio.
+6. Write code like an experienced Rust systems programmer.
+7. Optimize for performance and memory efficiency.
+8. Do not generate verbose AI-style code.
+9. Always consider zero-cost abstractions.
+10. Use tracing for logging, never println!.
+11. Create issue documents for all fixes and features.
+12. Reference issues in commit messages.

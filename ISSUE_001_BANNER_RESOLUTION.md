@@ -29,7 +29,7 @@ The banner (video/GIF) is displaying in a compressed rectangle instead of showin
 - `injector/src/presentation/gui.rs` - Lines 175-210
 
 ## Status
-Fixed - Commit pending
+Closed - Fixed in commit 012b03d
 
 ## Priority
 Medium - UI/UX improvement
