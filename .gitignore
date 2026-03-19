@@ -15,6 +15,7 @@ Cargo.lock
 .amazonq
 .github
 .gitingore
+.issues
 
 # OS
 .DS_Store
