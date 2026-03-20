@@ -215,6 +215,19 @@ Funções experimentais para testar manipulação de janelas:
 
 </h2>
 
+
+<h2 align="center">
+  
+**Microsoft winternl.h**: [NtQuerySystemInfo](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysysteminformation?source=post_page-----64043c7c2c4b---------------------------------------)  <img src="https://go-skill-icons.vercel.app/api/icons?i=cpp&size=32" width="40" />
+
+</h2>
+
+<h2 align="center">
+  
+**Hide Processes in Task Manager (Article) - S12 - 0x12Dark Development**: [Forum](https://medium.com/@s12deff/hide-processes-in-task-manager-64043c7c2c4b)  <img src="https://go-skill-icons.vercel.app/api/icons?i=cpp,c&size=32" width="40" />
+
+</h2>
+
 <h1 align="center">Créditos</h1>
 
 <p align="center">
