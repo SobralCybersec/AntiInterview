@@ -57,8 +57,8 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 Durante entrevistas online ou reuniões, oculte aplicações específicas da captura de tela enquanto continua usando-as normalmente.
 
 <p align="center">
-  <img src="./assets/screenshots/local-view.png" width="400" alt="O que você vê" />
-  <img src="./assets/screenshots/remote-view.png" width="400" alt="O que eles veem" />
+  <img src="https://i.imgur.com/rMrv8Ae.png" width="600" alt="O que você vê" />
+  <img src="https://i.imgur.com/TaXoxvb.png" width="600" alt="O que eles veem" />
 </p>
 
 **Esquerda**: Sua visão local | **Direita**: O que outros veem durante o compartilhamento
@@ -108,7 +108,7 @@ Janelas selecionadas são ocultadas das APIs de captura de tela, tornando-as inv
 
 #### Comportamento de Janelas
 - **Ignorar Mouse**: Janelas ocultas ficam transparentes ao clique
-- **Ocultar do Task Manager**: Oculta processos do Gerenciador de Tarefas
+- **Ocultar do Task Manager**: Recomendo desativo, em beta, utilize os hooks que é melhor.
 
 #### Ocultar Aplicações Comuns
 Oculte rapidamente navegadores e IDEs:
@@ -169,6 +169,7 @@ Funções experimentais para testar manipulação de janelas:
 * [x] Sistema de hooks para Task Manager
 * [x] 6 DLLs de hook especializadas (Notepad, Firefox, Edge, Chrome, VS Code, Visual Studio)
 * [x] Ocultação rápida de navegadores e IDEs
+* [ ] Ocultar Cursor
 * [ ] UI de customização de atalhos
 * [ ] Perfis de janelas
 * [ ] Regras de auto-ocultação
@@ -217,6 +218,6 @@ Funções experimentais para testar manipulação de janelas:
 <h1 align="center">Créditos</h1>
 
 <p align="center">
-  <strong>Desenvolvido por:</strong><br>
-  Matheus & Pyetrah<br>
+  <strong>Desenvolvido e Pensado por:</strong><br>
+  Matheus & Pyetrah (Designer)<br>
 </p>
