@@ -160,8 +160,9 @@ Oculte rapidamente navegadores e IDEs:
 - **Navegadores**: Firefox, Microsoft Edge, Google Chrome
 - **IDEs**: Visual Studio Code, Visual Studio
 
-#### Injetar Hooks no Task Manager
-Oculte processos específicos do Gerenciador de Tarefas:
+#### Interação com Processos do Sistema 
+Recurso experimental voltado para estudo de APIs internas do Windows. Não é necessário para o uso principal da aplicação:
+
 - **Notepad.exe**: Oculta Bloco de Notas
 - **firefox.exe**: Oculta Firefox e todos os processos filhos
 - **msedge.exe**: Oculta Microsoft Edge e todos os processos filhos
