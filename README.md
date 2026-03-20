@@ -5,7 +5,7 @@
   Anti-Interview
 </h1>
 
-Oculte janelas durante sessões de compartilhamento de tela com integração em nível de sistema
+Controle a visibilidade de janelas durante sessões de compartilhamento de tela com integração em nível de sistema, com foco em privacidade e proteção de dados sensíveis (LGPD).
 
 </div>
 
@@ -15,15 +15,15 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
   <img src="https://i.imgur.com/dwyUWDH.gif" width="30"/> Funcionalidades
 </h1>
 
-* **Ocultação de Janelas**: Oculte janelas específicas das APIs de captura de tela
-* **Ocultação do Task Manager**: Injete hooks para ocultar processos do Gerenciador de Tarefas
+* **Ocultação de Janelas**: Controle a visibilidade de janelas durante sessões de compartilhamento de tela com integração em nível de sistema, com foco em privacidade e proteção de dados sensíveis (LGPD).
+* **Manipulação de Processos (Experimental)**: Técnicas avançadas de interação com processos do sistema para fins de pesquisa e estudo de comportamento do Windows
 * **Bandeja do Sistema**: Minimize para a bandeja com ícone nativo
 * **Visualização ao Vivo**: Preview em tempo real com captura de tela
 * **Menu Animado**: Menu lateral expansível com animação suave
 * **Temas**: Alterne entre tema claro e escuro
 * **Atalhos**: Teclas de atalho personalizáveis
 * **Multi-Monitor**: Suporte completo para múltiplos monitores
-* **Payloads Avançados**: 12 funções de manipulação de janelas
+* **Técnicas Avançadas**: 12 funções de manipulação de janelas
 * **Hooks Especializados**: 6 DLLs de hook para processos específicos
 * **Arquitetura DDD**: Código limpo, manutenível e pronto para produção
 * **Abstrações Zero-Cost**: Implementação Rust de alta performance
@@ -41,7 +41,7 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 
 * Rust 1.70+
 * Windows API (Win32)
-* Injeção de DLL (dll-syringe)
+* Integração de baixo nível com processos Windows
 * Microsoft Detours (API Hooking)
 * Framework egui
 * Integração com Bandeja do Sistema
@@ -54,7 +54,7 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
   Demonstração:
 </h1>
 
-Durante entrevistas online ou reuniões, oculte aplicações específicas da captura de tela enquanto continua usando-as normalmente.
+Durante gravações ou testes:
 
 <p align="center">
   <img src="https://i.imgur.com/rMrv8Ae.png" width="600" alt="O que você vê" />
@@ -65,7 +65,53 @@ Durante entrevistas online ou reuniões, oculte aplicações específicas da cap
 
 Janelas selecionadas são ocultadas das APIs de captura de tela, tornando-as invisíveis para os participantes da reunião enquanto permanecem totalmente funcionais.
 
-**Compatível com**: Zoom, MS Teams, Discord, OBS e qualquer aplicação que use APIs de captura de tela do Windows.
+**Compatível com**: Qualquer aplicação que use APIs de captura de tela do Windows.
+
+---
+
+## Visão Geral
+
+Durante sessões de compartilhamento de tela (reuniões, demonstrações ou transmissões ao vivo), informações sensíveis ou aplicações privadas podem ser expostas inadvertidamente.
+
+O **Anti-Interview** fornece uma camada de filtragem de janelas em nível de sistema, permitindo que aplicações selecionadas sejam excluídas das APIs de captura de tela, enquanto permanecem totalmente visíveis e utilizáveis localmente.
+
+Isso permite:
+
+- Proteção de informações sensíveis (tokens, credenciais, ferramentas internas)
+- Apresentações mais limpas e controladas
+- Maior segurança em demonstrações e gravações ao vivo
+
+A aplicação integra-se diretamente com os mecanismos de captura do Windows, garantindo compatibilidade com ferramentas populares como Zoom, Microsoft Teams, Discord e OBS.
+
+---
+
+## Casos de Uso
+
+### Uso legítimo
+
+- Ocultar chaves de API ou credenciais durante sessões de live coding  
+- Evitar vazamento acidental de dashboards internos em reuniões  
+- Manter aplicações pessoais privadas durante compartilhamento de tela  
+- Demonstrar softwares de forma controlada  
+- Pesquisar o comportamento e limitações das APIs de captura de tela do Windows  
+
+---
+
+## Aviso Importante
+
+Este projeto é destinado exclusivamente para fins de:
+
+- Privacidade  
+- Pesquisa  
+- Educação  
+
+**Não deve ser utilizado para:**
+
+- Violar políticas de plataformas  
+- Burlar mecanismos de segurança  
+- Enganar avaliadores em processos seletivos ou ambientes profissionais  
+
+O uso indevido é de total responsabilidade do usuário.
 
 ---
 <h1 align="center">
@@ -108,7 +154,6 @@ Janelas selecionadas são ocultadas das APIs de captura de tela, tornando-as inv
 
 #### Comportamento de Janelas
 - **Ignorar Mouse**: Janelas ocultas ficam transparentes ao clique
-- **Ocultar do Task Manager**: Recomendo desativo, em beta, utilize os hooks que é melhor.
 
 #### Ocultar Aplicações Comuns
 Oculte rapidamente navegadores e IDEs:
@@ -193,7 +238,7 @@ Funções experimentais para testar manipulação de janelas:
 
 <h2 align="center">
   
-**Injeção de DLL**: [dll-syringe](https://github.com/OpenByteDev/dll-syringe)  <img src="https://go-skill-icons.vercel.app/api/icons?i=rust&size=32" width="40" />
+**Integração de baixo nível com processos Windows**: [dll-syringe](https://github.com/OpenByteDev/dll-syringe)  <img src="https://go-skill-icons.vercel.app/api/icons?i=rust&size=32" width="40" />
 
 </h2>
 
