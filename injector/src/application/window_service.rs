@@ -12,6 +12,10 @@ impl WindowService {
         Self { repository }
     }
 
+    pub fn inject_hook_dll(&self, dll_name: &str) -> Result<()> {
+        self.repository.inject_hook_dll(dll_name)
+    }
+
     pub fn list_windows(&self) -> Result<Vec<Window>> {
         self.repository.find_all()
     }
@@ -37,5 +41,9 @@ impl WindowService {
 
     pub fn get_icon(&self, window_id: &WindowId) -> Option<(usize, usize, Vec<u8>)> {
         self.repository.get_icon(window_id)
+    }
+
+    pub fn set_process_stealth(&self, process_id: &ProcessId) -> Result<()> {
+        self.repository.set_process_stealth(process_id)
     }
 }

@@ -6,7 +6,6 @@ use eframe::{
 };
 use image::{GenericImageView, ImageFormat, ImageReader};
 use std::{io::Cursor, sync::Arc};
-use tracing::{error, info};
 
 const ICON_SIZE: f32 = 16.0;
 const SPACING: f32 = 8.0;
@@ -33,6 +32,7 @@ pub struct AntiInterviewApp {
     menu_animation: f32,
     test_opacity: u8,
     test_hide_cursor: bool,
+    test_process_stealth: bool,
 }
 
 impl AntiInterviewApp {
@@ -44,7 +44,6 @@ impl AntiInterviewApp {
         if !frames.is_empty() {
             let video_stream = VideoStream::new(frames, video_info.fps as u32);
             video_renderer.load_video(video_stream);
-            info!("Banner loaded: {} frames at {:.2} FPS", video_info.frame_count, video_info.fps);
         }
 
         let theme = if state.config().ui.dark_theme { Theme::Dark } else { Theme::Light };
@@ -67,6 +66,7 @@ impl AntiInterviewApp {
             menu_animation: 0.0,
             test_opacity: 255,
             test_hide_cursor: false,
+            test_process_stealth: false,
         }
     }
 
@@ -205,13 +205,13 @@ impl AntiInterviewApp {
             
             ui.label(RichText::new("Autores").size(18.0).strong());
             ui.add_space(SPACING);
-            ui.label(RichText::new("Matheus & Pyetrah").size(16.0));
+            ui.label(RichText::new("Matheus S. & Pyetrah").size(16.0));
             
             ui.add_space(SPACING * 3.0);
             
             ui.label(RichText::new("Tecnologias").size(18.0).strong());
             ui.add_space(SPACING);
-            ui.label("Rust • Windows API • egui");
+            ui.label("Rust • C++ • CMake • Windows API • egui");
             
             ui.add_space(SPACING * 3.0);
             
@@ -348,18 +348,15 @@ impl AntiInterviewApp {
     fn render_window_list(&mut self, ui: &mut egui::Ui, ctx: &egui::Context, _theme: Theme) {
         let filter_text = self.state.filter_text().to_string();
         let hide_from_taskbar = self.state.config().ui.hide_from_taskbar;
+        let hide_from_task_manager = self.state.config().ui.hide_from_task_manager;
 
         let mut filter = filter_text.clone();
         ui.horizontal(|ui| {
             ui.label("Filtro:");
             ui.text_edit_singleline(&mut filter);
 
-            if ui.button("Selecionar Tudo").clicked() {
-                info!("Selecionar tudo clicado");
-            }
-
-            if ui.button("Limpar").clicked() {
-                info!("Limpar clicado");
+            if ui.button("Atualizar Lista").clicked() {
+                self.state.refresh_windows();
             }
         });
 
@@ -384,7 +381,7 @@ impl AntiInterviewApp {
                 Atom::grow().atom_size(Vec2::ZERO),
                 icon_atom,
                 Atom::grow().atom_size(Vec2::ZERO),
-                window.title(),
+                format!("{} ({})", window.title(), window.process_name()),
             );
 
             let mut is_hidden = window.is_hidden();
@@ -399,6 +396,10 @@ impl AntiInterviewApp {
                     is_hidden,
                     hide_taskbar,
                 );
+
+                if is_hidden && hide_from_task_manager {
+                    self.state.set_process_stealth(window.process_id().clone());
+                }
             }
 
             ui.add_space(2.0);
@@ -450,56 +451,130 @@ impl AntiInterviewApp {
             if ui.checkbox(&mut ignore_mouse, "Ignorar Mouse (Click-through)").changed() {
                 self.state.config_mut().ui.ignore_mouse = ignore_mouse;
             }
+            
+            ui.add_space(SPACING / 2.0);
+            
+            let mut hide_from_task_manager = self.state.config().ui.hide_from_task_manager;
+            if ui.checkbox(&mut hide_from_task_manager, "Ocultar do Task Manager").changed() {
+                self.state.config_mut().ui.hide_from_task_manager = hide_from_task_manager;
+            }
         });
 
         ui.add_space(SPACING);
 
         ui.group(|ui| {
-            ui.label(RichText::new("Testes de Payload").strong());
+            ui.label(RichText::new("Injetar Hooks no Task Manager").strong());
             ui.add_space(SPACING);
-            ui.label(RichText::new("Funções de teste (aplicam na janela ativa)").size(11.0).color(Color32::GRAY));
+            ui.label(RichText::new("⚠ Requer privilégios de administrador").size(10.0).color(Color32::from_rgb(255, 165, 0)));
+            ui.add_space(SPACING / 2.0);
+            
+            let mut hook_notepad = self.state.config().ui.hook_notepad;
+            if ui.checkbox(&mut hook_notepad, "𝄚 Ocultar Notepad.exe").changed() {
+                self.state.config_mut().ui.hook_notepad = hook_notepad;
+                if hook_notepad {
+                    let _ = self.state.inject_hook_dll("hook_notepad.dll");
+                }
+            }
+            
+            let mut hook_firefox = self.state.config().ui.hook_firefox;
+            if ui.checkbox(&mut hook_firefox, "✦ Ocultar firefox.exe (Firefox)").changed() {
+                self.state.config_mut().ui.hook_firefox = hook_firefox;
+                if hook_firefox {
+                    let _ = self.state.inject_hook_dll("hook_firefox.dll");
+                }
+            }
+            
+            let mut hook_edge = self.state.config().ui.hook_edge;
+            if ui.checkbox(&mut hook_edge, "❦ Ocultar msedge.exe (Microsoft Edge)").changed() {
+                self.state.config_mut().ui.hook_edge = hook_edge;
+                if hook_edge {
+                    let _ = self.state.inject_hook_dll("hook_edge.dll");
+                }
+            }
+            
+            let mut hook_chrome = self.state.config().ui.hook_chrome;
+            if ui.checkbox(&mut hook_chrome, "❤ Ocultar chrome.exe (Google Chrome)").changed() {
+                self.state.config_mut().ui.hook_chrome = hook_chrome;
+                if hook_chrome {
+                    let _ = self.state.inject_hook_dll("hook_chrome.dll");
+                }
+            }
+            
+            let mut hook_vscode = self.state.config().ui.hook_vscode;
+            if ui.checkbox(&mut hook_vscode, "❄ Ocultar Code.exe (Visual Studio Code)").changed() {
+                self.state.config_mut().ui.hook_vscode = hook_vscode;
+                if hook_vscode {
+                    let _ = self.state.inject_hook_dll("hook_vscode.dll");
+                }
+            }
+            
+            let mut hook_visualstudio = self.state.config().ui.hook_visualstudio;
+            if ui.checkbox(&mut hook_visualstudio, "𓃠 Ocultar devenv.exe (Visual Studio)").changed() {
+                self.state.config_mut().ui.hook_visualstudio = hook_visualstudio;
+                if hook_visualstudio {
+                    let _ = self.state.inject_hook_dll("hook_visualstudio.dll");
+                }
+            }
+            
+            let mut hook_antiinterview = self.state.config().ui.hook_antiinterview;
+            if ui.checkbox(&mut hook_antiinterview, "Ocultar anti-interview.exe (Software)").changed() {
+                self.state.config_mut().ui.hook_antiinterview = hook_antiinterview;
+                if hook_antiinterview {
+                    let _ = self.state.inject_hook_dll("hook_antiinterview.dll");
+                }
+            }
+            
+            ui.add_space(SPACING / 2.0);
+            ui.label(RichText::new("Nota: Hooks são injetados no Taskmgr.exe ao marcar").size(10.0).color(Color32::GRAY));
+        });
+
+        ui.add_space(SPACING);
+
+                ui.group(|ui| {
+            ui.label(RichText::new("Testes de Payload").strong());
             ui.add_space(SPACING);
             
             ui.horizontal(|ui| {
-                if ui.button("Minimizar").clicked() {
-                    info!("Teste: Minimizar janela");
-                }
-                if ui.button("Maximizar").clicked() {
-                    info!("Teste: Maximizar janela");
-                }
-                if ui.button("Restaurar").clicked() {
-                    info!("Teste: Restaurar janela");
-                }
+                ui.button("Minimizar").clicked();
+                ui.button("Maximizar").clicked();
+                if ui.button("Restaurar").clicked() {}
             });
             
             ui.add_space(SPACING / 2.0);
             
             ui.horizontal(|ui| {
-                if ui.button("Sempre no Topo").clicked() {
-                    info!("Teste: Sempre no topo");
-                }
-                if ui.button("Piscar na Barra").clicked() {
-                    info!("Teste: Piscar na barra");
-                }
+                ui.button("Sempre no Topo").clicked();
+                if ui.button("Piscar na Barra").clicked() {}
             });
             
             ui.add_space(SPACING / 2.0);
             
             ui.horizontal(|ui| {
                 ui.label("Opacidade:");
-                if ui.add(egui::Slider::new(&mut self.test_opacity, 0..=255)).changed() {
-                    info!("Teste: Opacidade {}", self.test_opacity);
-                }
+                ui.add(egui::Slider::new(&mut self.test_opacity, 0..=255));
             });
             
             ui.add_space(SPACING / 2.0);
             
-            if ui.checkbox(&mut self.test_hide_cursor, "Ocultar Cursor (experimental)").changed() {
-                info!("Teste: Ocultar cursor: {}", self.test_hide_cursor);
+            ui.checkbox(&mut self.test_hide_cursor, "Ocultar Cursor (experimental)");
+            
+            ui.add_space(SPACING / 2.0);
+            
+            if ui.checkbox(&mut self.test_process_stealth, "Ocultar Processo do Task Manager").changed() {
+                if self.test_process_stealth {
+                    use crate::domain::ProcessId;
+                    use windows::Win32::System::Threading::GetCurrentProcessId;
+                    let current_pid = unsafe { GetCurrentProcessId() };
+                    self.state.set_process_stealth(ProcessId::new(current_pid));
+                } else {
+                    use crate::domain::ProcessId;
+                    self.state.set_process_stealth(ProcessId::new(0));
+                }
             }
         });
 
         ui.add_space(SPACING);
+
 
         ui.group(|ui| {
             ui.label(RichText::new("Atalhos").strong());
@@ -512,10 +587,7 @@ impl AntiInterviewApp {
         ui.add_space(SPACING);
 
         if ui.button("Salvar Configuração").clicked() {
-            match self.state.save_config() {
-                Ok(_) => info!("Configuração salva com sucesso"),
-                Err(e) => error!("Falha ao salvar configuração: {:?}", e),
-            }
+            let _ = self.state.save_config();
         }
     }
 }

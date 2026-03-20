@@ -1,0 +1,9 @@
+C:/Users/serasa/Desktop/Projetos/Cibersecurity/InvisWind/hook/out/build/x64-Debug/CMakeFiles/hook_notepad.dir
+C:/Users/serasa/Desktop/Projetos/Cibersecurity/InvisWind/hook/out/build/x64-Debug/CMakeFiles/hook_firefox.dir
+C:/Users/serasa/Desktop/Projetos/Cibersecurity/InvisWind/hook/out/build/x64-Debug/CMakeFiles/hook_edge.dir
+C:/Users/serasa/Desktop/Projetos/Cibersecurity/InvisWind/hook/out/build/x64-Debug/CMakeFiles/hook_chrome.dir
+C:/Users/serasa/Desktop/Projetos/Cibersecurity/InvisWind/hook/out/build/x64-Debug/CMakeFiles/hook_vscode.dir
+C:/Users/serasa/Desktop/Projetos/Cibersecurity/InvisWind/hook/out/build/x64-Debug/CMakeFiles/hook_visualstudio.dir
+C:/Users/serasa/Desktop/Projetos/Cibersecurity/InvisWind/hook/out/build/x64-Debug/CMakeFiles/hook_antiinterview.dir
+C:/Users/serasa/Desktop/Projetos/Cibersecurity/InvisWind/hook/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/serasa/Desktop/Projetos/Cibersecurity/InvisWind/hook/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir

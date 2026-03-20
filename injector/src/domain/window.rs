@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WindowId(u32);
@@ -24,22 +25,32 @@ impl ProcessId {
     pub fn value(&self) -> u32 {
         self.0
     }
+
 }
+
+impl fmt::Display for ProcessId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 
 #[derive(Debug, Clone)]
 pub struct Window {
     id: WindowId,
     title: String,
     process_id: ProcessId,
+    process_name: String,
     hidden: bool,
 }
 
 impl Window {
-    pub fn new(id: WindowId, title: String, process_id: ProcessId, hidden: bool) -> Self {
+    pub fn new(id: WindowId, title: String, process_id: ProcessId, process_name: String, hidden: bool) -> Self {
         Self {
             id,
             title,
             process_id,
+            process_name,
             hidden,
         }
     }
@@ -56,6 +67,10 @@ impl Window {
         &self.process_id
     }
 
+    pub fn process_name(&self) -> &str {
+        &self.process_name
+    }
+
     pub fn is_hidden(&self) -> bool {
         self.hidden
     }
@@ -68,7 +83,9 @@ impl Window {
         if filter.is_empty() {
             return true;
         }
-        self.title.to_lowercase().contains(&filter.to_lowercase())
+        let filter_lower = filter.to_lowercase();
+        self.title.to_lowercase().contains(&filter_lower) ||
+        self.process_name.to_lowercase().contains(&filter_lower)
     }
 }
 
@@ -94,11 +111,13 @@ mod tests {
             WindowId::new(1),
             "Test Window".to_string(),
             ProcessId::new(100),
+            "test.exe".to_string(),
             false,
         );
         assert_eq!(window.id().value(), 1);
         assert_eq!(window.title(), "Test Window");
         assert_eq!(window.process_id().value(), 100);
+        assert_eq!(window.process_name(), "test.exe");
         assert!(!window.is_hidden());
     }
 
@@ -108,6 +127,7 @@ mod tests {
             WindowId::new(1),
             "Test".to_string(),
             ProcessId::new(100),
+            "test.exe".to_string(),
             false,
         );
         assert!(!window.is_hidden());
@@ -121,6 +141,7 @@ mod tests {
             WindowId::new(1),
             "Chrome Browser".to_string(),
             ProcessId::new(100),
+            "chrome.exe".to_string(),
             false,
         );
         assert!(window.matches_filter(""));
@@ -132,6 +153,7 @@ mod tests {
             WindowId::new(1),
             "Chrome Browser".to_string(),
             ProcessId::new(100),
+            "chrome.exe".to_string(),
             false,
         );
         assert!(window.matches_filter("chrome"));
@@ -145,6 +167,7 @@ mod tests {
             WindowId::new(1),
             "Chrome Browser".to_string(),
             ProcessId::new(100),
+            "chrome.exe".to_string(),
             false,
         );
         assert!(!window.matches_filter("firefox"));

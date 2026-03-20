@@ -1,0 +1,114 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.15"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "hook",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "hook_antiinterview::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-hook_antiinterview-Debug-ee40c3979d452773d301.json",
+					"name" : "hook_antiinterview",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "hook_chrome::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-hook_chrome-Debug-8610a1fd677812b6d04d.json",
+					"name" : "hook_chrome",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "hook_edge::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-hook_edge-Debug-9288963cde1127776341.json",
+					"name" : "hook_edge",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "hook_firefox::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-hook_firefox-Debug-d5d97552b0601455ff4f.json",
+					"name" : "hook_firefox",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "hook_notepad::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-hook_notepad-Debug-8144b094ac77c328f4a1.json",
+					"name" : "hook_notepad",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "hook_visualstudio::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-hook_visualstudio-Debug-60188be714a57df8d6d1.json",
+					"name" : "hook_visualstudio",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "hook_vscode::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-hook_vscode-Debug-0df76267eac760f03b72.json",
+					"name" : "hook_vscode",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/serasa/Desktop/Projetos/Cibersecurity/InvisWind/hook/out/build/x64-Debug",
+		"source" : "C:/Users/serasa/Desktop/Projetos/Cibersecurity/InvisWind/hook"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 8
+	}
+}

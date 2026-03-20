@@ -29,6 +29,6 @@ impl VideoRenderer {
     }
 
     pub fn has_video(&self) -> bool {
-        self.video_stream.as_ref().map_or(false, |s| !s.is_empty())
+        self.video_stream.as_ref().is_some_and(|s| !s.is_empty())
     }
 }

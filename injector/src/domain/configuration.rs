@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Hotkeys {
@@ -27,6 +28,34 @@ pub struct UiSettings {
     pub banner_url: Option<String>,
     #[serde(default)]
     pub ignore_mouse: bool,
+    #[serde(default)]
+    pub hide_from_task_manager: bool,
+    #[serde(default)]
+    pub hidden_windows: HashSet<u32>,
+    #[serde(default)]
+    pub browser_firefox_hidden: bool,
+    #[serde(default)]
+    pub browser_edge_hidden: bool,
+    #[serde(default)]
+    pub browser_chrome_hidden: bool,
+    #[serde(default)]
+    pub ide_vscode_hidden: bool,
+    #[serde(default)]
+    pub ide_vs_hidden: bool,
+    #[serde(default)]
+    pub hook_notepad: bool,
+    #[serde(default)]
+    pub hook_firefox: bool,
+    #[serde(default)]
+    pub hook_edge: bool,
+    #[serde(default)]
+    pub hook_chrome: bool,
+    #[serde(default)]
+    pub hook_vscode: bool,
+    #[serde(default)]
+    pub hook_visualstudio: bool,
+    #[serde(default)]
+    pub hook_antiinterview: bool,
 }
 
 impl Default for UiSettings {
@@ -38,6 +67,20 @@ impl Default for UiSettings {
             window_size: (320.0, 540.0),
             banner_url: None,
             ignore_mouse: false,
+            hide_from_task_manager: false,
+            hidden_windows: HashSet::new(),
+            browser_firefox_hidden: false,
+            browser_edge_hidden: false,
+            browser_chrome_hidden: false,
+            ide_vscode_hidden: false,
+            ide_vs_hidden: false,
+            hook_notepad: false,
+            hook_firefox: false,
+            hook_edge: false,
+            hook_chrome: false,
+            hook_vscode: false,
+            hook_visualstudio: false,
+            hook_antiinterview: false,
         }
     }
 }

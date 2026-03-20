@@ -3,7 +3,6 @@ use tracing::{error, info};
 
 pub struct VideoInfo {
     pub fps: f64,
-    pub frame_count: usize,
 }
 
 pub fn load_embedded_frames(ctx: &egui::Context, gif_data: &[u8]) -> (Vec<egui::TextureHandle>, VideoInfo) {
@@ -20,7 +19,7 @@ pub fn load_embedded_frames(ctx: &egui::Context, gif_data: &[u8]) -> (Vec<egui::
                 match frame_result {
                     Ok(frame) => {
                         let delay = frame.delay();
-                        total_delay += delay.numer_denom_ms().0 as u32;
+                        total_delay += delay.numer_denom_ms().0;
                         
                         let img = frame.into_buffer();
                         let size = [img.width() as usize, img.height() as usize];
@@ -47,11 +46,11 @@ pub fn load_embedded_frames(ctx: &egui::Context, gif_data: &[u8]) -> (Vec<egui::
             };
             
             info!("Embedded GIF loaded: {} frames at {:.2} FPS", frame_count, fps);
-            (textures, VideoInfo { fps, frame_count })
+            (textures, VideoInfo { fps })
         }
         Err(e) => {
             error!("Failed to decode embedded GIF: {:?}", e);
-            (Vec::new(), VideoInfo { fps: 10.0, frame_count: 0 })
+            (Vec::new(), VideoInfo { fps: 10.0 })
         }
     }
 }

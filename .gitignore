@@ -16,6 +16,9 @@ Cargo.lock
 .github
 .gitingore
 .issues
+anti-interview-v1.0.0
+.vs/
+
 
 # OS
 .DS_Store

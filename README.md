@@ -16,6 +16,7 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 </h1>
 
 * **Ocultação de Janelas**: Oculte janelas específicas das APIs de captura de tela
+* **Ocultação do Task Manager**: Injete hooks para ocultar processos do Gerenciador de Tarefas
 * **Bandeja do Sistema**: Minimize para a bandeja com ícone nativo
 * **Visualização ao Vivo**: Preview em tempo real com captura de tela
 * **Menu Animado**: Menu lateral expansível com animação suave
@@ -23,6 +24,7 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 * **Atalhos**: Teclas de atalho personalizáveis
 * **Multi-Monitor**: Suporte completo para múltiplos monitores
 * **Payloads Avançados**: 12 funções de manipulação de janelas
+* **Hooks Especializados**: 6 DLLs de hook para processos específicos
 * **Arquitetura DDD**: Código limpo, manutenível e pronto para produção
 * **Abstrações Zero-Cost**: Implementação Rust de alta performance
 * **Auto-Atualização**: Atualização automática da lista de janelas
@@ -40,8 +42,10 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 * Rust 1.70+
 * Windows API (Win32)
 * Injeção de DLL (dll-syringe)
+* Microsoft Detours (API Hooking)
 * Framework egui
 * Integração com Bandeja do Sistema
+* CMake + vcpkg
 
 ---
 
@@ -104,6 +108,23 @@ Janelas selecionadas são ocultadas das APIs de captura de tela, tornando-as inv
 
 #### Comportamento de Janelas
 - **Ignorar Mouse**: Janelas ocultas ficam transparentes ao clique
+- **Ocultar do Task Manager**: Oculta processos do Gerenciador de Tarefas
+
+#### Ocultar Aplicações Comuns
+Oculte rapidamente navegadores e IDEs:
+- **Navegadores**: Firefox, Microsoft Edge, Google Chrome
+- **IDEs**: Visual Studio Code, Visual Studio
+
+#### Injetar Hooks no Task Manager
+Oculte processos específicos do Gerenciador de Tarefas:
+- **Notepad.exe**: Oculta Bloco de Notas
+- **firefox.exe**: Oculta Firefox e todos os processos filhos
+- **msedge.exe**: Oculta Microsoft Edge e todos os processos filhos
+- **chrome.exe**: Oculta Google Chrome e todos os processos filhos
+- **Code.exe**: Oculta VS Code e todos os processos filhos
+- **devenv.exe**: Oculta Visual Studio e todos os processos filhos
+
+**Nota**: Requer privilégios de administrador e Task Manager em execução
 
 #### Testes de Payload
 Funções experimentais para testar manipulação de janelas:
@@ -145,6 +166,9 @@ Funções experimentais para testar manipulação de janelas:
 * [x] Sistema de temas (claro/escuro)
 * [x] 12 funções de payload para manipulação de janelas
 * [x] Seção de créditos
+* [x] Sistema de hooks para Task Manager
+* [x] 6 DLLs de hook especializadas (Notepad, Firefox, Edge, Chrome, VS Code, Visual Studio)
+* [x] Ocultação rápida de navegadores e IDEs
 * [ ] UI de customização de atalhos
 * [ ] Perfis de janelas
 * [ ] Regras de auto-ocultação
@@ -181,6 +205,12 @@ Funções experimentais para testar manipulação de janelas:
 <h2 align="center">
   
 **Framework egui**: [egui](https://github.com/emilk/egui)  <img src="https://go-skill-icons.vercel.app/api/icons?i=rust&size=32" width="40" />
+
+</h2>
+
+<h2 align="center">
+  
+**Microsoft Detours**: [Detours](https://github.com/microsoft/Detours)  <img src="https://go-skill-icons.vercel.app/api/icons?i=cpp&size=32" width="40" />
 
 </h2>
 

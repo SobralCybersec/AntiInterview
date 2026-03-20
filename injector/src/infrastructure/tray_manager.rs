@@ -1,6 +1,7 @@
 use anyhow::Result;
 use image::ImageReader;
 use std::io::Cursor;
+
 use tray_icon::{
     menu::{Menu, MenuEvent, MenuItem},
     Icon, TrayIcon, TrayIconBuilder,
