@@ -11,6 +11,19 @@ Controle a visibilidade de janelas durante sessões de compartilhamento de tela 
 
 ---
 
+
+<h1 align="center">
+  <img src="https://i.imgur.com/LM3gtS5.gif" width="30" />
+  Virus Total (Got one False Positive):
+</h1>
+
+<div align="center">
+  <img src="https://i.imgur.com/IEjnjNp.png">
+  <img src="https://i.imgur.com/La8FrUI.png">
+</div>
+
+---
+
 <h1 align="center">
   <img src="https://i.imgur.com/dwyUWDH.gif" width="30"/> Funcionalidades
 </h1>
