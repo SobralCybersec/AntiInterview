@@ -1,4 +1,5 @@
 use crate::application::WindowRepository;
+use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use crate::domain::{ProcessId, Window, WindowId};
 use anyhow::{Context, Result};
 use dll_syringe::{
@@ -38,9 +39,7 @@ impl WindowsWindowRepository {
         let mut dll_path = env::current_exe()?;
         dll_path.pop();
 
-        if cfg!(debug_assertions) && process.runs_under_wow64()? {
-            dll_path.push("../i686-pc-windows-msvc/debug/utils.dll");
-        } else if process.is_x86()? {
+        if process.is_x86()? {
             dll_path.push("utils32.dll");
         } else {
             dll_path.push("utils.dll");
@@ -57,9 +56,36 @@ impl WindowsWindowRepository {
         unsafe { syringe.get_raw_procedure::<F>(module, proc_name) }?
             .context(format!("Failed to find procedure {}", proc_name))
     }
+
+    pub fn set_cursor_capture_hidden(&self, hidden: bool) -> Result<()> {
+        let our_pid = std::process::id();
+        let target_process = OwnedProcess::from_pid(our_pid)
+            .map_err(|e| anyhow::anyhow!("Failed to open own process: {:?}", e))?;
+
+        let dll_path = Self::get_dll_path(&target_process)?;
+        let syringe = Syringe::for_process(target_process);
+        let module = syringe.find_or_inject(&dll_path)
+            .map_err(|e| anyhow::anyhow!("Failed to inject: {:?}", e))?;
+
+        if hidden {
+            let proc = Self::get_remote_proc::<extern "system" fn() -> bool>(
+                &syringe, module, "HideCursorFromCapture"
+            )?;
+            proc.call().map_err(|e| anyhow::anyhow!("{:?}", e))?;
+        } else {
+            let proc = Self::get_remote_proc::<extern "system" fn() -> bool>(
+                &syringe, module, "RestoreCursor"
+            )?;
+            proc.call().map_err(|e| anyhow::anyhow!("{:?}", e))?;
+        }
+        Ok(())
+    }
 }
 
+
 impl WindowRepository for WindowsWindowRepository {
+
+    
     fn find_all(&self) -> Result<Vec<Window>> {
         let mut windows = Vec::new();
 
@@ -70,6 +96,53 @@ impl WindowRepository for WindowsWindowRepository {
 
         Ok(windows)
     }
+
+    fn set_cursor_capture_hidden(&self, hidden: bool) -> Result<()> {
+        use windows::Win32::UI::WindowsAndMessaging::{
+            CreateCursor, SetSystemCursor, SystemParametersInfoW,
+            SYSTEM_CURSOR_ID, SPI_SETCURSORS, SPIF_UPDATEINIFILE,
+        };
+
+        // All standard system cursor IDs
+        const CURSOR_IDS: &[u32] = &[
+            32512, // OCR_NORMAL - arrow
+            32513, // OCR_IBEAM - text
+            32514, // OCR_WAIT - hourglass
+            32515, // OCR_CROSS
+            32516, // OCR_UP
+            32642, // OCR_SIZENWSE
+            32643, // OCR_SIZENESW
+            32644, // OCR_SIZEWE
+            32645, // OCR_SIZENS
+            32646, // OCR_SIZEALL
+            32648, // OCR_NO
+            32649, // OCR_HAND
+            32650, // OCR_APPSTARTING
+        ];
+
+        static AND_MASK: [u8; 128] = [0xFF; 128];
+        static XOR_MASK: [u8; 128] = [0x00; 128];
+
+        unsafe {
+            if hidden {
+                for &id in CURSOR_IDS {
+                    if let Ok(cursor) = CreateCursor(
+                        None, 0, 0, 32, 32,
+                        AND_MASK.as_ptr() as *const _,
+                        XOR_MASK.as_ptr() as *const _,
+                    ) {
+                        let _ = SetSystemCursor(cursor, SYSTEM_CURSOR_ID(id));
+                    }
+                }
+            } else {
+                SystemParametersInfoW(SPI_SETCURSORS, 0, None, SPIF_UPDATEINIFILE)
+                    .map_err(|e| anyhow::anyhow!("RestoreCursor failed: {:?}", e))?;
+            }
+        }
+        Ok(())
+    }
+
+    
 
     fn get_icon(&self, window_id: &WindowId) -> Option<(usize, usize, Vec<u8>)> {
         let hwnd = HWND(window_id.value() as *mut _);

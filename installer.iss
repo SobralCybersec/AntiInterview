@@ -1,7 +1,7 @@
 #define MyAppName "Anti-Interview"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "Matheus & Pyetrah"
-#define MyAppURL "https://github.com/yourusername/InvisWind"
+#define MyAppURL "https://github.com/SobralCybersec/AntiInterview"
 #define MyAppExeName "anti-interview.exe"
 
 [Setup]
@@ -37,6 +37,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 
 [Files]
 Source: "target\release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "target\release\ai_browser_window.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "target\release\utils.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "hook\out\build\x64-Debug\hook_notepad.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "hook\out\build\x64-Debug\hook_firefox.dll"; DestDir: "{app}"; Flags: ignoreversion

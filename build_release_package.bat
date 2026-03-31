@@ -14,7 +14,7 @@ echo.
 
 echo [2/3] Creating portable ZIP package...
 if not exist "release" mkdir release
-powershell -Command "Compress-Archive -Path 'target\release\anti-interview.exe','target\release\utils.dll','hook\out\build\x64-Debug\hook_notepad.dll','hook\out\build\x64-Debug\hook_firefox.dll','hook\out\build\x64-Debug\hook_edge.dll','hook\out\build\x64-Debug\hook_chrome.dll','hook\out\build\x64-Debug\hook_vscode.dll','hook\out\build\x64-Debug\hook_visualstudio.dll','hook\out\build\x64-Debug\hook_antiinterview.dll','README.md','LICENSE','RELEASE_NOTES.md','RELEASE_NOTES_PT.md','assets' -DestinationPath 'release\anti-interview-v1.0.0-portable.zip' -Force"
+powershell -Command "Compress-Archive -Path 'target\release\anti-interview.exe','target\release\ai_browser_window.exe','target\release\utils.dll','hook\out\build\x64-Debug\hook_notepad.dll','hook\out\build\x64-Debug\hook_firefox.dll','hook\out\build\x64-Debug\hook_edge.dll','hook\out\build\x64-Debug\hook_chrome.dll','hook\out\build\x64-Debug\hook_vscode.dll','hook\out\build\x64-Debug\hook_visualstudio.dll','hook\out\build\x64-Debug\hook_antiinterview.dll','README.md','LICENSE','RELEASE_NOTES_V1.1.0.md','RELEASE_NOTES_PT_V1.1.0.md','assets' -DestinationPath 'release\anti-interview-v1.2.0-portable.zip' -Force"
 echo.
 
 echo [3/3] Building installer with Inno Setup...
@@ -31,7 +31,7 @@ echo ========================================
 echo Build Complete!
 echo ========================================
 echo.
-echo Portable ZIP: release\anti-interview-v1.0.0-portable.zip
-echo Installer: installer\anti-interview-setup-v1.0.0.exe
+echo Portable ZIP: release\anti-interview-v1.2.0-portable.zip
+echo Installer: installer\anti-interview-setup-v1.2.0.exe
 echo.
 pause

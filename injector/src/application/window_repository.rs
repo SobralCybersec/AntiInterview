@@ -11,6 +11,7 @@ pub trait WindowRepository {
         hidden: bool,
         hide_from_taskbar: Option<bool>,
     ) -> Result<()>;
+    fn set_cursor_capture_hidden(&self, hidden: bool) -> Result<()>;
     fn set_process_stealth(&self, process_id: &ProcessId) -> Result<()>;
     fn inject_hook_dll(&self, dll_name: &str) -> Result<()>;
 }

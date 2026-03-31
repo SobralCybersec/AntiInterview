@@ -18,7 +18,9 @@ Cargo.lock
 .issues
 anti-interview-v1.0.0
 .vs/
+RELEASE_NOTES_V1.1.0.md
 
+RELEASE_NOTES_PT_V1.1.0.md
 
 # OS
 .DS_Store

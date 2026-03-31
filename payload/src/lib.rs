@@ -3,6 +3,8 @@ use std::process::Command;
 use windows::Win32::{
     Foundation::{COLORREF, HWND, RECT},
     UI::WindowsAndMessaging::{
+           CreateCursor, SetSystemCursor, SystemParametersInfoW,
+    SYSTEM_CURSOR_ID, SPI_SETCURSORS, SPIF_UPDATEINIFILE,
         FlashWindow, GetWindowLongW, GetWindowRect, SetLayeredWindowAttributes,
         SetWindowDisplayAffinity, SetWindowLongW, SetWindowPos, ShowCursor, ShowWindow,
         GWL_EXSTYLE, HWND_NOTOPMOST, HWND_TOPMOST, LWA_ALPHA, SWP_FRAMECHANGED, SWP_NOMOVE,
@@ -52,6 +54,36 @@ pub unsafe extern "system" fn GetHiddenProcessName(buffer: *mut u16, buffer_size
         0
     }
 }
+
+#[no_mangle]
+pub extern "system" fn HideCursorFromCapture() -> bool {
+    unsafe {
+        let cursor = match CreateCursor(
+            None, 0, 0, 32, 32,
+            AND_MASK.as_ptr() as *const _,
+            XOR_MASK.as_ptr() as *const _,
+        ) {
+            Ok(c) => c,
+            Err(_) => return false,
+        };
+        SetSystemCursor(cursor, SYSTEM_CURSOR_ID(32512)).is_ok()
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn RestoreCursor() -> bool {
+    unsafe {
+        SystemParametersInfoW(
+            SPI_SETCURSORS, 
+            0, 
+            None, 
+            SPIF_UPDATEINIFILE
+        ).is_ok()
+    }
+}
+
+static AND_MASK: [u8; 128] = [0xFF; 128]; // fully transparent
+static XOR_MASK: [u8; 128] = [0x00; 128];
 
 /// # Safety
 /// 

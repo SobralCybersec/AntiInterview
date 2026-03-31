@@ -16,15 +16,19 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 </h1>
 
 * **Ocultação de Janelas**: Oculte janelas específicas das APIs de captura de tela
+* **Ocultar Cursor**: Cursor invisível via winit `set_cursor_visible` — toggleável nas configurações
+* **Navegador AI Integrado**: Acesse ChatGPT, Claude, Gemini e Antigravity sem abrir navegador externo
+* **Screenshot Silencioso**: Capture e copie para área de transferência com Ctrl+Shift+P
+* **Auto-Ocultar Navegador AI**: Oculta automaticamente janelas do navegador integrado
 * **Ocultação do Task Manager**: Injete hooks para ocultar processos do Gerenciador de Tarefas
 * **Bandeja do Sistema**: Minimize para a bandeja com ícone nativo
 * **Visualização ao Vivo**: Preview em tempo real com captura de tela
 * **Menu Animado**: Menu lateral expansível com animação suave
 * **Temas**: Alterne entre tema claro e escuro
-* **Atalhos**: Teclas de atalho personalizáveis
+* **Atalhos**: Teclas de atalho personalizáveis (7 atalhos configuráveis)
 * **Multi-Monitor**: Suporte completo para múltiplos monitores
 * **Payloads Avançados**: 12 funções de manipulação de janelas
-* **Hooks Especializados**: 6 DLLs de hook para processos específicos
+* **Hooks Especializados**: 7 DLLs de hook para processos específicos
 * **Arquitetura DDD**: Código limpo, manutenível e pronto para produção
 * **Abstrações Zero-Cost**: Implementação Rust de alta performance
 * **Auto-Atualização**: Atualização automática da lista de janelas
@@ -43,7 +47,9 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 * Windows API (Win32)
 * Injeção de DLL (dll-syringe)
 * Microsoft Detours (API Hooking)
-* Framework egui
+* Framework egui (winit)
+* WRY/WebView2 (Navegador Integrado)
+* Arboard (Clipboard)
 * Integração com Bandeja do Sistema
 * CMake + vcpkg
 
@@ -79,6 +85,7 @@ Janelas selecionadas são ocultadas das APIs de captura de tela, tornando-as inv
 2. Navegue pelo menu lateral:
    - **Início**: Visão geral e acesso rápido
    - **Janelas**: Gerenciar janelas ocultas
+   - **Navegador AI**: Acesse IAs sem abrir navegador externo
    - **Configurações**: Personalizar comportamento
    - **Créditos**: Informações sobre o projeto
 3. Selecione as janelas para ocultar da lista
@@ -105,9 +112,12 @@ Janelas selecionadas são ocultadas das APIs de captura de tela, tornando-as inv
 - **Tema Escuro**: Alterna entre tema claro e escuro
 - **Ocultar de Alt+Tab**: Remove janelas da lista de tarefas
 - **Mostrar Preview**: Exibe preview da área de trabalho
+- **Auto-Colar Screenshot**: Copia automaticamente screenshot para área de transferência
+- **Auto-Ocultar Navegador AI**: Oculta automaticamente janelas do navegador integrado
 
 #### Comportamento de Janelas
 - **Ignorar Mouse**: Janelas ocultas ficam transparentes ao clique
+- **Ocultar Cursor**: Torna o cursor invisível via winit — toggleável, sem afetar outras janelas
 - **Ocultar do Task Manager**: Recomendo desativo, em beta, utilize os hooks que é melhor.
 
 #### Ocultar Aplicações Comuns
@@ -123,6 +133,7 @@ Oculte processos específicos do Gerenciador de Tarefas:
 - **chrome.exe**: Oculta Google Chrome e todos os processos filhos
 - **Code.exe**: Oculta VS Code e todos os processos filhos
 - **devenv.exe**: Oculta Visual Studio e todos os processos filhos
+- **ai_browser_window.exe**: Oculta navegador AI integrado
 
 **Nota**: Requer privilégios de administrador e Task Manager em execução
 
@@ -138,9 +149,32 @@ Funções experimentais para testar manipulação de janelas:
 
 | Atalho | Ação |
 |--------|------|
-| `Ctrl+Shift+S` | Screenshot |
+| `Ctrl+Shift+S` | Screenshot normal |
+| `Ctrl+Shift+P` | Screenshot silencioso (copia para área de transferência) |
 | `Ctrl+Shift+H` | Ocultar janela selecionada |
 | `Ctrl+Shift+I` | Mostrar/Ocultar GUI |
+| `Ctrl+Shift+R` | Atualizar lista de janelas |
+| `Ctrl+Shift+V` | Alternar preview |
+| `Ctrl+Shift+A` | Abrir navegador AI |
+
+### Navegador AI Integrado
+
+1. Vá para a seção **Navegador AI**
+2. Selecione a IA desejada:
+   - **ChatGPT** (https://chatgpt.com)
+   - **Antigravity** (https://antigravity.ai)
+   - **Gemini** (https://gemini.google.com)
+   - **Claude** (https://claude.ai)
+3. Clique em **Abrir Navegador**
+4. Janela borderless com WebView2 será aberta
+5. Use **Screenshot Silencioso** (Ctrl+Shift+P) para capturar e colar diretamente
+6. Navegador é automaticamente ocultado se **Auto-Ocultar** estiver ativo
+
+**Recursos:**
+- Janela sem bordas (borderless) para aparência profissional
+- Botões de fechar/minimizar personalizados
+- Monitoramento automático de processo
+- Estado sincronizado com aplicação principal
 
 ### Bandeja do Sistema
 
@@ -167,9 +201,15 @@ Funções experimentais para testar manipulação de janelas:
 * [x] 12 funções de payload para manipulação de janelas
 * [x] Seção de créditos
 * [x] Sistema de hooks para Task Manager
-* [x] 6 DLLs de hook especializadas (Notepad, Firefox, Edge, Chrome, VS Code, Visual Studio)
+* [x] 7 DLLs de hook especializadas (Notepad, Firefox, Edge, Chrome, VS Code, Visual Studio, AI Browser)
 * [x] Ocultação rápida de navegadores e IDEs
-* [ ] Ocultar Cursor
+* [x] Navegador AI integrado com WRY/WebView2
+* [x] Screenshot silencioso com cópia para área de transferência
+* [x] Auto-ocultar navegador AI
+* [x] 7 atalhos configuráveis
+* [x] Janelas borderless para navegador AI
+* [x] Monitoramento automático de processo do navegador
+* [x] Ocultar Cursor via winit set_cursor_visible (toggleável)
 * [ ] UI de customização de atalhos
 * [ ] Perfis de janelas
 * [ ] Regras de auto-ocultação

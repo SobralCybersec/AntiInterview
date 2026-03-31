@@ -6,6 +6,32 @@ pub struct Hotkeys {
     pub screenshot: String,
     pub hide_window: String,
     pub show_gui: String,
+    #[serde(default = "Hotkeys::default_silent_screenshot")]
+    pub silent_screenshot: String,
+    #[serde(default = "Hotkeys::default_refresh_windows")]
+    pub refresh_windows: String,
+    #[serde(default = "Hotkeys::default_toggle_preview")]
+    pub toggle_preview: String,
+    #[serde(default = "Hotkeys::default_open_ai_browser")]
+    pub open_ai_browser: String,
+}
+
+impl Hotkeys {
+    fn default_silent_screenshot() -> String {
+        "Ctrl+Shift+P".to_string()
+    }
+    
+    fn default_refresh_windows() -> String {
+        "Ctrl+Shift+R".to_string()
+    }
+    
+    fn default_toggle_preview() -> String {
+        "Ctrl+Shift+V".to_string()
+    }
+    
+    fn default_open_ai_browser() -> String {
+        "Ctrl+Shift+A".to_string()
+    }
 }
 
 impl Default for Hotkeys {
@@ -14,6 +40,10 @@ impl Default for Hotkeys {
             screenshot: "Ctrl+Shift+S".to_string(),
             hide_window: "Ctrl+Shift+H".to_string(),
             show_gui: "Ctrl+Shift+I".to_string(),
+            silent_screenshot: "Ctrl+Shift+P".to_string(),
+            refresh_windows: "Ctrl+Shift+R".to_string(),
+            toggle_preview: "Ctrl+Shift+V".to_string(),
+            open_ai_browser: "Ctrl+Shift+A".to_string(),
         }
     }
 }
@@ -56,6 +86,12 @@ pub struct UiSettings {
     pub hook_visualstudio: bool,
     #[serde(default)]
     pub hook_antiinterview: bool,
+    #[serde(default)]
+    pub auto_paste_screenshot: bool,
+    #[serde(default)]
+    pub auto_hide_ai_browser: bool,
+    #[serde(default)]
+    pub hide_cursor: bool,
 }
 
 impl Default for UiSettings {
@@ -81,6 +117,9 @@ impl Default for UiSettings {
             hook_vscode: false,
             hook_visualstudio: false,
             hook_antiinterview: false,
+            auto_paste_screenshot: false,
+            auto_hide_ai_browser: true,
+            hide_cursor: false,
         }
     }
 }
@@ -122,6 +161,10 @@ mod tests {
         assert_eq!(hotkeys.screenshot, "Ctrl+Shift+S");
         assert_eq!(hotkeys.hide_window, "Ctrl+Shift+H");
         assert_eq!(hotkeys.show_gui, "Ctrl+Shift+I");
+        assert_eq!(hotkeys.silent_screenshot, "Ctrl+Shift+P");
+        assert_eq!(hotkeys.refresh_windows, "Ctrl+Shift+R");
+        assert_eq!(hotkeys.toggle_preview, "Ctrl+Shift+V");
+        assert_eq!(hotkeys.open_ai_browser, "Ctrl+Shift+A");
     }
 
     #[test]

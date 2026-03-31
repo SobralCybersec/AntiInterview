@@ -1,6 +1,6 @@
 [package]
 name = "anti-interview"
-version = "1.0.0"
+version = "1.2.0"
 edition = "2021"
 
 [dependencies]
@@ -20,6 +20,10 @@ tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.8"
 dirs = "6.0"
+open = "5"
+wry = "0.55"
+tao = "0.30"
+arboard = "3"
 
 [build-dependencies]
 winresource = "0.1.23"
@@ -27,3 +31,11 @@ winresource = "0.1.23"
 [[bin]]
 name = "anti-interview"
 path = "src/main.rs"
+
+[[bin]]
+name = "ai_browser_window"
+path = "src/bin/ai_browser_window.rs"
+
+[[bin]]
+name = "test_wry_browser"
+path = "src/bin/test_wry_browser.rs"

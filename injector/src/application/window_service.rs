@@ -27,7 +27,11 @@ impl WindowService {
             .cloned()
             .collect()
     }
-
+    
+    pub fn set_cursor_capture_hidden(&self, hidden: bool) -> Result<()> {
+        self.repository.set_cursor_capture_hidden(hidden)
+    }
+    
     pub fn toggle_visibility(
         &self,
         process_id: &ProcessId,

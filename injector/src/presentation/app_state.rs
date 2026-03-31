@@ -38,6 +38,7 @@ pub struct AppState {
     filter_text: String,
     frame_counter: u32,
     window_visible: bool,
+    pub last_screenshot_path: Option<String>,
 }
 
 impl AppState {
@@ -111,6 +112,7 @@ impl AppState {
             filter_text: String::new(),
             frame_counter: 0,
             window_visible: true,
+            last_screenshot_path: None,
         };
         
         state.refresh_windows();
@@ -314,6 +316,10 @@ impl AppState {
         }
     }
 
+    pub fn set_cursor_capture_hidden(&self, hidden: bool) -> Result<()> {
+        self.window_service.set_cursor_capture_hidden(hidden)
+    }
+
     pub fn capture_texture(&self) -> Option<&TextureHandle> {
         self.capture_texture.as_ref()
     }
@@ -434,7 +440,71 @@ impl AppState {
         }
     }
 
+    /// Captures the screen as others see it (hidden windows excluded) and saves to a temp file.
+    /// Stores the resulting path in `last_screenshot_path`.
+    /// Optionally copies image to clipboard if enabled.
+    pub fn take_silent_screenshot(&mut self) -> anyhow::Result<String> {
+        use std::time::{SystemTime, UNIX_EPOCH};
+
+        if !self.config.ui.show_preview {
+            self.start_capture();
+            std::thread::sleep(std::time::Duration::from_millis(200));
+        }
+
+        let ts = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_millis())
+            .unwrap_or(0);
+
+        let path = std::env::temp_dir().join(format!("anti_interview_{}.png", ts));
+        let path_str = path.to_string_lossy().to_string();
+
+        for _ in 0..10 {
+            if let Some(img) = self.capture_manager.try_recv_image() {
+                let width = img.width() as u32;
+                let height = img.height() as u32;
+                let raw: Vec<u8> = img.as_raw().to_vec();
+
+                let dyn_img = image::RgbaImage::from_raw(width, height, raw.clone())
+                    .map(image::DynamicImage::ImageRgba8)
+                    .ok_or_else(|| anyhow::anyhow!("Failed to construct image from capture"))?;
+
+                dyn_img.save(&path)?;
+                self.last_screenshot_path = Some(path_str.clone());
+                tracing::info!("Silent screenshot saved: {}", path_str);
+                
+                if self.config.ui.auto_paste_screenshot {
+                    use arboard::{Clipboard, ImageData};
+                    
+                    match Clipboard::new() {
+                        Ok(mut clipboard) => {
+                            let img_data = ImageData {
+                                width: width as usize,
+                                height: height as usize,
+                                bytes: raw.into(),
+                            };
+                            
+                            if let Err(e) = clipboard.set_image(img_data) {
+                                tracing::error!("Failed to copy image to clipboard: {:?}", e);
+                            } else {
+                                tracing::info!("Screenshot image copied to clipboard");
+                            }
+                        }
+                        Err(e) => tracing::error!("Failed to create clipboard: {:?}", e),
+                    }
+                }
+                
+                return Ok(path_str);
+            }
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
+
+        anyhow::bail!("No capture frame available for silent screenshot after retries")
+    }
+
     pub fn inject_hook_dll(&self, dll_name: &str) -> Result<()> {
         self.window_service.inject_hook_dll(dll_name)
     }
 }
+
+

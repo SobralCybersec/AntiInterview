@@ -1,8 +1,7 @@
-use crate::presentation::{video::*, AppState};
+use crate::presentation::{video::*, AiBrowserState, AiTab, AppState};
 use eframe::{
-    egui::{self, Atom, AtomExt, Color32, Direction, FontData, FontDefinitions, FontFamily, 
-          FontId, Image, Layout, Margin, RichText, TextStyle, Theme, Vec2},
-    Renderer,
+    Renderer, egui::{self, Atom, AtomExt, Color32, Direction, FontData, FontDefinitions, FontFamily, 
+          FontId, Image, Layout, Margin, RichText, TextStyle, Theme, Vec2, Window}
 };
 use image::{GenericImageView, ImageFormat, ImageReader};
 use std::{io::Cursor, sync::Arc};
@@ -18,6 +17,7 @@ enum MenuSection {
     Windows,
     Settings,
     Credits,
+    AiBrowser,
 }
 
 pub struct AntiInterviewApp {
@@ -28,11 +28,13 @@ pub struct AntiInterviewApp {
     windows_icon: Option<egui::TextureHandle>,
     settings_icon: Option<egui::TextureHandle>,
     credits_icon: Option<egui::TextureHandle>,
+    ai_browser_icon: Option<egui::TextureHandle>,
     menu_expanded: bool,
     menu_animation: f32,
     test_opacity: u8,
     test_hide_cursor: bool,
     test_process_stealth: bool,
+    ai_browser: AiBrowserState,
 }
 
 impl AntiInterviewApp {
@@ -53,6 +55,15 @@ impl AntiInterviewApp {
         let windows_icon = Self::load_icon(ctx, "windows");
         let settings_icon = Self::load_icon(ctx, "settings");
         let credits_icon = Self::load_icon(ctx, "credits");
+        let ai_browser_icon = Self::load_icon(ctx, "ai_browser");
+
+        let mut ai_browser = AiBrowserState::default();
+        
+        let state_ref = std::sync::Arc::new(std::sync::Mutex::new(()));
+        ai_browser.set_on_browser_spawn(move || {
+            std::thread::sleep(std::time::Duration::from_millis(1000));
+            tracing::info!("Callback: Hiding AI browser windows");
+        });
 
         Self { 
             state,
@@ -62,11 +73,13 @@ impl AntiInterviewApp {
             windows_icon,
             settings_icon,
             credits_icon,
+            ai_browser_icon,
             menu_expanded: false,
             menu_animation: 0.0,
             test_opacity: 255,
             test_hide_cursor: false,
             test_process_stealth: false,
+            ai_browser,
         }
     }
 
@@ -191,6 +204,129 @@ impl AntiInterviewApp {
             {
                 self.active_section = MenuSection::Credits;
             }
+
+            ui.add_space(SPACING);
+
+            let ai_button = if let Some(icon) = &self.ai_browser_icon {
+                egui::Button::image(Image::from_texture(icon).fit_to_exact_size(Vec2::new(32.0, 32.0)))
+            } else {
+                egui::Button::new("AI")
+            };
+
+            if self.menu_expanded {
+                ui.horizontal(|ui| {
+                    if ui.add_sized([50.0, 50.0], ai_button).clicked() {
+                        self.active_section = MenuSection::AiBrowser;
+                    }
+                    ui.add_space(SPACING);
+                    ui.label(RichText::new("AI Browser").size(14.0));
+                });
+            } else if ui.add_sized([50.0, 50.0], ai_button)
+                .on_hover_text("AI Browser")
+                .clicked()
+            {
+                self.active_section = MenuSection::AiBrowser;
+            }
+        });
+    }
+
+    fn render_ai_browser(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
+        self.render_banner(ui, ctx);
+        
+        ui.heading("AI Browser");
+        ui.label("Acesse ferramentas de IA em janela integrada");
+        ui.add_space(SPACING);
+
+        ui.horizontal(|ui| {
+            for &tab in AiTab::all() {
+                let is_active = self.ai_browser.active_tab == tab;
+                if ui.selectable_label(is_active, tab.label()).clicked() {
+                    self.ai_browser.select_tab(tab);
+                }
+            }
+        });
+
+        ui.add_space(SPACING);
+        ui.separator();
+        ui.add_space(SPACING);
+
+        let url = self.ai_browser.active_tab.url();
+        
+        ui.group(|ui| {
+            ui.vertical_centered(|ui| {
+                ui.heading(self.ai_browser.active_tab.label());
+                ui.add_space(SPACING / 2.0);
+                
+                
+                if self.ai_browser.is_browser_open() {
+                    ui.label(RichText::new("Navegador integrado aberto").color(Color32::from_rgb(0, 200, 0)));
+                    ui.add_space(SPACING / 2.0);
+                    ui.label(RichText::new("Feche a janela do navegador para abrir outra").size(10.0).color(Color32::GRAY));
+                } else {
+                    if ui.button(format!("Abrir {} em Navegador Integrado", self.ai_browser.active_tab.label())).clicked() {
+                        tracing::info!("=== BUTTON CLICKED ===");
+                        tracing::info!("User clicked: Abrir {} em Navegador Integrado", self.ai_browser.active_tab.label());
+                        tracing::info!("Active tab: {:?}", self.ai_browser.active_tab);
+                        tracing::info!("Target URL: {}", self.ai_browser.active_tab.url());
+                        tracing::info!("Calling open_browser_window()...");
+                        
+                        self.ai_browser.open_browser_window();
+                        
+                        if self.state.config().ui.auto_hide_ai_browser {
+                            std::thread::sleep(std::time::Duration::from_millis(1500));
+                            self.state.refresh_windows();
+                            std::thread::sleep(std::time::Duration::from_millis(500));
+                            self.state.hide_browser_windows("AI Browser");
+                            tracing::info!("AI Browser windows auto-hidden");
+                        }
+                        
+                        tracing::info!("open_browser_window() returned");
+                        tracing::info!("Browser open state: {}", self.ai_browser.is_browser_open());
+                    }
+                    ui.add_space(SPACING / 2.0);
+                    if ui.button("Abrir no Navegador Externo").clicked() {
+                        tracing::info!("Opening external browser for: {}", url);
+                        if let Err(e) = open::that(url) {
+                            tracing::error!("Failed to open external browser: {:?}", e);
+                        } else {
+                            tracing::info!("External browser opened successfully");
+                        }
+                    }
+                }
+            });
+        });
+
+        ui.add_space(SPACING);
+        ui.separator();
+        ui.add_space(SPACING);
+
+        ui.group(|ui| {
+            ui.label(RichText::new(" Screenshot Silencioso").strong());
+            ui.add_space(SPACING / 2.0);
+            ui.label("Pressione Ctrl+Shift+P para capturar a tela como outros veem");
+            ui.add_space(SPACING / 2.0);
+
+            if let Some(path) = &self.state.last_screenshot_path.clone() {
+                ui.label(RichText::new("Último screenshot capturado:").color(Color32::from_rgb(0, 200, 0)));
+                ui.add_space(SPACING / 4.0);
+                
+                let mut path_display = path.clone();
+                ui.horizontal(|ui| {
+                    ui.text_edit_singleline(&mut path_display);
+                    if ui.button("📋 Copiar").clicked() {
+                        ctx.copy_text(path.clone());
+                    }
+                    if ui.button("🗑 Limpar").clicked() {
+                        self.ai_browser.clear_screenshot_path();
+                        self.state.last_screenshot_path = None;
+                    }
+                });
+                
+                ui.add_space(SPACING / 2.0);
+                ui.label(RichText::new("Dica: Copie e cole no navegador integrado").size(10.0).color(Color32::GRAY));
+            } else {
+                ui.label(RichText::new("Nenhum screenshot capturado ainda").color(Color32::GRAY));
+            }
         });
     }
 
@@ -215,7 +351,7 @@ impl AntiInterviewApp {
             
             ui.add_space(SPACING * 3.0);
             
-            ui.label(RichText::new("© 2025 - Todos os direitos reservados").size(12.0).color(Color32::GRAY));
+            ui.label(RichText::new("© 2026 - Todos os direitos reservados").size(12.0).color(Color32::GRAY));
         });
     }
 
@@ -454,6 +590,16 @@ impl AntiInterviewApp {
             
             ui.add_space(SPACING / 2.0);
             
+            let mut hide_cursor = self.state.config().ui.hide_cursor;
+            if ui.checkbox(&mut hide_cursor, "Ocultar Cursor").changed() {
+                self.state.config_mut().ui.hide_cursor = hide_cursor;
+                if let Err(e) = self.state.set_cursor_capture_hidden(hide_cursor) {
+                        tracing::error!("Failed to set cursor capture visibility: {:?}", e);
+                }
+            }
+            
+            ui.add_space(SPACING / 2.0);
+            
             let mut hide_from_task_manager = self.state.config().ui.hide_from_task_manager;
             if ui.checkbox(&mut hide_from_task_manager, "Ocultar do Task Manager").changed() {
                 self.state.config_mut().ui.hide_from_task_manager = hide_from_task_manager;
@@ -469,7 +615,7 @@ impl AntiInterviewApp {
             ui.add_space(SPACING / 2.0);
             
             let mut hook_notepad = self.state.config().ui.hook_notepad;
-            if ui.checkbox(&mut hook_notepad, "𝄚 Ocultar Notepad.exe").changed() {
+            if ui.checkbox(&mut hook_notepad, "❤ Ocultar Notepad.exe").changed() {
                 self.state.config_mut().ui.hook_notepad = hook_notepad;
                 if hook_notepad {
                     let _ = self.state.inject_hook_dll("hook_notepad.dll");
@@ -477,7 +623,7 @@ impl AntiInterviewApp {
             }
             
             let mut hook_firefox = self.state.config().ui.hook_firefox;
-            if ui.checkbox(&mut hook_firefox, "✦ Ocultar firefox.exe (Firefox)").changed() {
+            if ui.checkbox(&mut hook_firefox, "❤ Ocultar firefox.exe (Firefox)").changed() {
                 self.state.config_mut().ui.hook_firefox = hook_firefox;
                 if hook_firefox {
                     let _ = self.state.inject_hook_dll("hook_firefox.dll");
@@ -485,7 +631,7 @@ impl AntiInterviewApp {
             }
             
             let mut hook_edge = self.state.config().ui.hook_edge;
-            if ui.checkbox(&mut hook_edge, "❦ Ocultar msedge.exe (Microsoft Edge)").changed() {
+            if ui.checkbox(&mut hook_edge, "❤ Ocultar msedge.exe (Microsoft Edge)").changed() {
                 self.state.config_mut().ui.hook_edge = hook_edge;
                 if hook_edge {
                     let _ = self.state.inject_hook_dll("hook_edge.dll");
@@ -501,7 +647,7 @@ impl AntiInterviewApp {
             }
             
             let mut hook_vscode = self.state.config().ui.hook_vscode;
-            if ui.checkbox(&mut hook_vscode, "❄ Ocultar Code.exe (Visual Studio Code)").changed() {
+            if ui.checkbox(&mut hook_vscode, "❤ Ocultar Code.exe (Visual Studio Code)").changed() {
                 self.state.config_mut().ui.hook_vscode = hook_vscode;
                 if hook_vscode {
                     let _ = self.state.inject_hook_dll("hook_vscode.dll");
@@ -509,7 +655,7 @@ impl AntiInterviewApp {
             }
             
             let mut hook_visualstudio = self.state.config().ui.hook_visualstudio;
-            if ui.checkbox(&mut hook_visualstudio, "𓃠 Ocultar devenv.exe (Visual Studio)").changed() {
+            if ui.checkbox(&mut hook_visualstudio, "❤ Ocultar devenv.exe (Visual Studio)").changed() {
                 self.state.config_mut().ui.hook_visualstudio = hook_visualstudio;
                 if hook_visualstudio {
                     let _ = self.state.inject_hook_dll("hook_visualstudio.dll");
@@ -526,6 +672,28 @@ impl AntiInterviewApp {
             
             ui.add_space(SPACING / 2.0);
             ui.label(RichText::new("Nota: Hooks são injetados no Taskmgr.exe ao marcar").size(10.0).color(Color32::GRAY));
+        });
+
+        ui.add_space(SPACING);
+
+        ui.group(|ui| {
+            ui.label(RichText::new("AI Browser").strong());
+            ui.add_space(SPACING);
+            
+            let mut auto_hide_ai_browser = self.state.config().ui.auto_hide_ai_browser;
+            if ui.checkbox(&mut auto_hide_ai_browser, "Auto-ocultar janelas do AI Browser").changed() {
+                self.state.config_mut().ui.auto_hide_ai_browser = auto_hide_ai_browser;
+            }
+            
+            ui.add_space(SPACING / 2.0);
+            
+            let mut auto_paste_screenshot = self.state.config().ui.auto_paste_screenshot;
+            if ui.checkbox(&mut auto_paste_screenshot, "Auto-copiar screenshot para clipboard").changed() {
+                self.state.config_mut().ui.auto_paste_screenshot = auto_paste_screenshot;
+            }
+            
+            ui.add_space(SPACING / 2.0);
+            ui.label(RichText::new("Nota: Screenshot será copiado automaticamente ao pressionar Ctrl+Shift+P").size(10.0).color(Color32::GRAY));
         });
 
         ui.add_space(SPACING);
@@ -556,10 +724,6 @@ impl AntiInterviewApp {
             
             ui.add_space(SPACING / 2.0);
             
-            ui.checkbox(&mut self.test_hide_cursor, "Ocultar Cursor (experimental)");
-            
-            ui.add_space(SPACING / 2.0);
-            
             if ui.checkbox(&mut self.test_process_stealth, "Ocultar Processo do Task Manager").changed() {
                 if self.test_process_stealth {
                     use crate::domain::ProcessId;
@@ -577,11 +741,66 @@ impl AntiInterviewApp {
 
 
         ui.group(|ui| {
-            ui.label(RichText::new("Atalhos").strong());
+            ui.label(RichText::new("Atalhos de Teclado").strong());
             ui.add_space(SPACING);
-            ui.label(format!("Screenshot: {}", self.state.config().hotkeys.screenshot));
-            ui.label(format!("Ocultar Janela: {}", self.state.config().hotkeys.hide_window));
-            ui.label(format!("Mostrar GUI: {}", self.state.config().hotkeys.show_gui));
+            
+            ui.horizontal(|ui| {
+                ui.label(RichText::new("Ação").strong().size(11.0));
+                ui.add_space(40.0);
+                ui.label(RichText::new("Atalho").strong().size(11.0));
+            });
+            
+            ui.separator();
+            ui.add_space(SPACING / 2.0);
+            
+            ui.horizontal(|ui| {
+                ui.label("Screenshot:");
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(RichText::new(&self.state.config().hotkeys.screenshot).monospace().color(Color32::from_rgb(100, 200, 255)));
+                });
+            });
+            
+            ui.horizontal(|ui| {
+                ui.label("Screenshot Silencioso:");
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(RichText::new(&self.state.config().hotkeys.silent_screenshot).monospace().color(Color32::from_rgb(100, 200, 255)));
+                });
+            });
+            
+            ui.horizontal(|ui| {
+                ui.label("Ocultar Janela:");
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(RichText::new(&self.state.config().hotkeys.hide_window).monospace().color(Color32::from_rgb(100, 200, 255)));
+                });
+            });
+            
+            ui.horizontal(|ui| {
+                ui.label("Mostrar/Ocultar GUI:");
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(RichText::new(&self.state.config().hotkeys.show_gui).monospace().color(Color32::from_rgb(100, 200, 255)));
+                });
+            });
+            
+            ui.horizontal(|ui| {
+                ui.label("Atualizar Janelas:");
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(RichText::new(&self.state.config().hotkeys.refresh_windows).monospace().color(Color32::from_rgb(100, 200, 255)));
+                });
+            });
+            
+            ui.horizontal(|ui| {
+                ui.label("Alternar Preview:");
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(RichText::new(&self.state.config().hotkeys.toggle_preview).monospace().color(Color32::from_rgb(100, 200, 255)));
+                });
+            });
+            
+            ui.horizontal(|ui| {
+                ui.label("Abrir AI Browser:");
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(RichText::new(&self.state.config().hotkeys.open_ai_browser).monospace().color(Color32::from_rgb(100, 200, 255)));
+                });
+            });
         });
 
         ui.add_space(SPACING);
@@ -594,6 +813,31 @@ impl AntiInterviewApp {
 
 impl eframe::App for AntiInterviewApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if self.state.config().ui.hide_cursor {
+            ctx.set_cursor_icon(egui::CursorIcon::None);
+            
+            if let Some(pos) = ctx.input(|i| i.pointer.hover_pos()) {
+                let painter = ctx.layer_painter(egui::LayerId::new(
+                    egui::Order::Tooltip,
+                    egui::Id::new("fake_cursor"),
+                ));
+
+                // Arrow shape using a triangle
+                let size = 12.0;
+                let tip = pos;
+                let p1 = tip + egui::Vec2::new(0.0, size);
+                let p2 = tip + egui::Vec2::new(size * 0.4, size * 0.7);
+
+                painter.add(egui::Shape::convex_polygon(
+                    vec![tip, p1, p2],
+                    egui::Color32::WHITE,
+                    egui::Stroke::new(2.0, egui::Color32::BLACK),
+                ));
+            }
+        } else {
+            ctx.set_cursor_icon(egui::CursorIcon::Default);
+        }
+
         if let Some(event) = self.state.check_tray_events() {
             match event {
                 crate::infrastructure::TrayEvent::Show => {
@@ -633,8 +877,63 @@ impl eframe::App for AntiInterviewApp {
             }
         }
 
+        // Ctrl+Shift+P: silent screenshot
+        if ctx.input(|i| {
+            i.modifiers.ctrl && i.modifiers.shift && i.key_pressed(egui::Key::P)
+        }) {
+            match self.state.take_silent_screenshot() {
+                Ok(path) => {
+                    self.ai_browser.set_screenshot_path(path.clone());
+                    self.active_section = MenuSection::AiBrowser;
+                }
+                Err(e) => tracing::error!("Silent screenshot failed: {:?}", e),
+            }
+        }
+
+        // Ctrl+Shift+R: refresh windows
+        if ctx.input(|i| {
+            i.modifiers.ctrl && i.modifiers.shift && i.key_pressed(egui::Key::R)
+        }) {
+            self.state.refresh_windows();
+            tracing::info!("Windows list refreshed via hotkey");
+        }
+
+        // Ctrl+Shift+V: toggle preview
+        if ctx.input(|i| {
+            i.modifiers.ctrl && i.modifiers.shift && i.key_pressed(egui::Key::V)
+        }) {
+            let new_state = !self.state.config().ui.show_preview;
+            self.state.toggle_preview(new_state);
+            tracing::info!("Preview toggled: {}", new_state);
+        }
+
+        // Ctrl+Shift+A: open AI browser
+        if ctx.input(|i| {
+            i.modifiers.ctrl && i.modifiers.shift && i.key_pressed(egui::Key::A)
+        }) {
+            self.active_section = MenuSection::AiBrowser;
+            tracing::info!("AI Browser opened via hotkey");
+        }
+
         let theme = ctx.theme();
         let focused = ctx.input(|i| i.focused);
+
+        // Custom title bar for borderless window
+        egui::TopBottomPanel::top("title_bar").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.add_space(10.0);
+                ui.label(RichText::new("Anti-Interview").strong().size(14.0));
+                
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if ui.button(RichText::new("✕").size(16.0)).clicked() {
+                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                    }
+                    if ui.button(RichText::new("−").size(16.0)).clicked() {
+                        ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(true));
+                    }
+                });
+            });
+        });
 
         egui::SidePanel::left("side_menu")
             .resizable(false)
@@ -672,6 +971,9 @@ impl eframe::App for AntiInterviewApp {
                         MenuSection::Credits => {
                             self.render_credits(ui, ctx, theme);
                         }
+                        MenuSection::AiBrowser => {
+                            self.render_ai_browser(ui, ctx);
+                        }
                     }
                 });
             });
@@ -685,7 +987,8 @@ pub fn start(state: AppState) {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size(config.ui.window_size)
             .with_resizable(true)
-            .with_min_inner_size([300.0, 400.0]),
+            .with_min_inner_size([300.0, 400.0])
+            .with_decorations(false),
         renderer: Renderer::Glow,
         vsync: true,
         ..Default::default()
