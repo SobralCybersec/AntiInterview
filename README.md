@@ -15,16 +15,30 @@ Controle a visibilidade de janelas durante sessões de compartilhamento de tela 
   <img src="https://i.imgur.com/dwyUWDH.gif" width="30"/> Funcionalidades
 </h1>
 
+<<<<<<< HEAD
 * **Ocultação de Janelas**: Oculte janelas específicas das APIs de captura de tela
+* **Ocultar Cursor**: Cursor invisível via winit `set_cursor_visible` — toggleável nas configurações
+* **Navegador AI Integrado**: Acesse ChatGPT, Claude, Gemini e Antigravity sem abrir navegador externo
+* **Screenshot Silencioso**: Capture e copie para área de transferência com Ctrl+Shift+P
+* **Auto-Ocultar Navegador AI**: Oculta automaticamente janelas do navegador integrado
 * **Ocultação do Task Manager**: Injete hooks para ocultar processos do Gerenciador de Tarefas
+=======
+* **Ocultação de Janelas**: Controle a visibilidade de janelas durante sessões de compartilhamento de tela com integração em nível de sistema, com foco em privacidade e proteção de dados sensíveis (LGPD).
+* **Manipulação de Processos (Experimental)**: Técnicas avançadas de interação com processos do sistema para fins de pesquisa e estudo de comportamento do Windows
+>>>>>>> 1e9070871c62c28b66e7eabdc169b38947d8c157
 * **Bandeja do Sistema**: Minimize para a bandeja com ícone nativo
 * **Visualização ao Vivo**: Preview em tempo real com captura de tela
 * **Menu Animado**: Menu lateral expansível com animação suave
 * **Temas**: Alterne entre tema claro e escuro
 * **Atalhos**: Teclas de atalho personalizáveis (7 atalhos configuráveis)
 * **Multi-Monitor**: Suporte completo para múltiplos monitores
+<<<<<<< HEAD
 * **Payloads Avançados**: 12 funções de manipulação de janelas
+* **Hooks Especializados**: 7 DLLs de hook para processos específicos
+=======
+* **Técnicas Avançadas**: 12 funções de manipulação de janelas
 * **Hooks Especializados**: 6 DLLs de hook para processos específicos
+>>>>>>> 1e9070871c62c28b66e7eabdc169b38947d8c157
 * **Arquitetura DDD**: Código limpo, manutenível e pronto para produção
 * **Abstrações Zero-Cost**: Implementação Rust de alta performance
 * **Auto-Atualização**: Atualização automática da lista de janelas
@@ -159,7 +173,11 @@ O uso indevido é de total responsabilidade do usuário.
 
 #### Comportamento de Janelas
 - **Ignorar Mouse**: Janelas ocultas ficam transparentes ao clique
+<<<<<<< HEAD
+- **Ocultar Cursor**: Torna o cursor invisível via winit — toggleável, sem afetar outras janelas
 - **Ocultar do Task Manager**: Recomendo desativo, em beta, utilize os hooks que é melhor.
+=======
+>>>>>>> 1e9070871c62c28b66e7eabdc169b38947d8c157
 
 #### Ocultar Aplicações Comuns
 Oculte rapidamente navegadores e IDEs:
