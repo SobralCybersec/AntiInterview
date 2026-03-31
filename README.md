@@ -5,7 +5,7 @@
   Anti-Interview
 </h1>
 
-Oculte janelas durante sessões de compartilhamento de tela com integração em nível de sistema
+Controle a visibilidade de janelas durante sessões de compartilhamento de tela com integração em nível de sistema, com foco em privacidade e proteção de dados sensíveis (LGPD).
 
 </div>
 
@@ -16,10 +16,6 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 </h1>
 
 * **Ocultação de Janelas**: Oculte janelas específicas das APIs de captura de tela
-* **Ocultar Cursor**: Cursor invisível via winit `set_cursor_visible` — toggleável nas configurações
-* **Navegador AI Integrado**: Acesse ChatGPT, Claude, Gemini e Antigravity sem abrir navegador externo
-* **Screenshot Silencioso**: Capture e copie para área de transferência com Ctrl+Shift+P
-* **Auto-Ocultar Navegador AI**: Oculta automaticamente janelas do navegador integrado
 * **Ocultação do Task Manager**: Injete hooks para ocultar processos do Gerenciador de Tarefas
 * **Bandeja do Sistema**: Minimize para a bandeja com ícone nativo
 * **Visualização ao Vivo**: Preview em tempo real com captura de tela
@@ -28,7 +24,7 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 * **Atalhos**: Teclas de atalho personalizáveis (7 atalhos configuráveis)
 * **Multi-Monitor**: Suporte completo para múltiplos monitores
 * **Payloads Avançados**: 12 funções de manipulação de janelas
-* **Hooks Especializados**: 7 DLLs de hook para processos específicos
+* **Hooks Especializados**: 6 DLLs de hook para processos específicos
 * **Arquitetura DDD**: Código limpo, manutenível e pronto para produção
 * **Abstrações Zero-Cost**: Implementação Rust de alta performance
 * **Auto-Atualização**: Atualização automática da lista de janelas
@@ -45,7 +41,7 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
 
 * Rust 1.70+
 * Windows API (Win32)
-* Injeção de DLL (dll-syringe)
+* Integração de baixo nível com processos Windows
 * Microsoft Detours (API Hooking)
 * Framework egui (winit)
 * WRY/WebView2 (Navegador Integrado)
@@ -60,7 +56,7 @@ Oculte janelas durante sessões de compartilhamento de tela com integração em 
   Demonstração:
 </h1>
 
-Durante entrevistas online ou reuniões, oculte aplicações específicas da captura de tela enquanto continua usando-as normalmente.
+Durante gravações ou testes:
 
 <p align="center">
   <img src="https://i.imgur.com/rMrv8Ae.png" width="600" alt="O que você vê" />
@@ -71,7 +67,53 @@ Durante entrevistas online ou reuniões, oculte aplicações específicas da cap
 
 Janelas selecionadas são ocultadas das APIs de captura de tela, tornando-as invisíveis para os participantes da reunião enquanto permanecem totalmente funcionais.
 
-**Compatível com**: Zoom, MS Teams, Discord, OBS e qualquer aplicação que use APIs de captura de tela do Windows.
+**Compatível com**: Qualquer aplicação que use APIs de captura de tela do Windows.
+
+---
+
+## Visão Geral
+
+Durante sessões de compartilhamento de tela (reuniões, demonstrações ou transmissões ao vivo), informações sensíveis ou aplicações privadas podem ser expostas inadvertidamente.
+
+O **Anti-Interview** fornece uma camada de filtragem de janelas em nível de sistema, permitindo que aplicações selecionadas sejam excluídas das APIs de captura de tela, enquanto permanecem totalmente visíveis e utilizáveis localmente.
+
+Isso permite:
+
+- Proteção de informações sensíveis (tokens, credenciais, ferramentas internas)
+- Apresentações mais limpas e controladas
+- Maior segurança em demonstrações e gravações ao vivo
+
+A aplicação integra-se diretamente com os mecanismos de captura do Windows, garantindo compatibilidade com ferramentas populares como Zoom, Microsoft Teams, Discord e OBS.
+
+---
+
+## Casos de Uso
+
+### Uso legítimo
+
+- Ocultar chaves de API ou credenciais durante sessões de live coding  
+- Evitar vazamento acidental de dashboards internos em reuniões  
+- Manter aplicações pessoais privadas durante compartilhamento de tela  
+- Demonstrar softwares de forma controlada  
+- Pesquisar o comportamento e limitações das APIs de captura de tela do Windows  
+
+---
+
+## Aviso Importante
+
+Este projeto é destinado exclusivamente para fins de:
+
+- Privacidade  
+- Pesquisa  
+- Educação  
+
+**Não deve ser utilizado para:**
+
+- Violar políticas de plataformas  
+- Burlar mecanismos de segurança  
+- Enganar avaliadores em processos seletivos ou ambientes profissionais  
+
+O uso indevido é de total responsabilidade do usuário.
 
 ---
 <h1 align="center">
@@ -117,7 +159,6 @@ Janelas selecionadas são ocultadas das APIs de captura de tela, tornando-as inv
 
 #### Comportamento de Janelas
 - **Ignorar Mouse**: Janelas ocultas ficam transparentes ao clique
-- **Ocultar Cursor**: Torna o cursor invisível via winit — toggleável, sem afetar outras janelas
 - **Ocultar do Task Manager**: Recomendo desativo, em beta, utilize os hooks que é melhor.
 
 #### Ocultar Aplicações Comuns
@@ -125,8 +166,9 @@ Oculte rapidamente navegadores e IDEs:
 - **Navegadores**: Firefox, Microsoft Edge, Google Chrome
 - **IDEs**: Visual Studio Code, Visual Studio
 
-#### Injetar Hooks no Task Manager
-Oculte processos específicos do Gerenciador de Tarefas:
+#### Interação com Processos do Sistema 
+Recurso experimental voltado para estudo de APIs internas do Windows. Não é necessário para o uso principal da aplicação:
+
 - **Notepad.exe**: Oculta Bloco de Notas
 - **firefox.exe**: Oculta Firefox e todos os processos filhos
 - **msedge.exe**: Oculta Microsoft Edge e todos os processos filhos
@@ -233,7 +275,7 @@ Funções experimentais para testar manipulação de janelas:
 
 <h2 align="center">
   
-**Injeção de DLL**: [dll-syringe](https://github.com/OpenByteDev/dll-syringe)  <img src="https://go-skill-icons.vercel.app/api/icons?i=rust&size=32" width="40" />
+**Integração de baixo nível com processos Windows**: [dll-syringe](https://github.com/OpenByteDev/dll-syringe)  <img src="https://go-skill-icons.vercel.app/api/icons?i=rust&size=32" width="40" />
 
 </h2>
 
@@ -252,6 +294,19 @@ Funções experimentais para testar manipulação de janelas:
 <h2 align="center">
   
 **Microsoft Detours**: [Detours](https://github.com/microsoft/Detours)  <img src="https://go-skill-icons.vercel.app/api/icons?i=cpp&size=32" width="40" />
+
+</h2>
+
+
+<h2 align="center">
+  
+**Microsoft winternl.h**: [NtQuerySystemInfo](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysysteminformation?source=post_page-----64043c7c2c4b---------------------------------------)  <img src="https://go-skill-icons.vercel.app/api/icons?i=cpp&size=32" width="40" />
+
+</h2>
+
+<h2 align="center">
+  
+**Hide Processes in Task Manager (Article) - S12 - 0x12Dark Development**: [Forum](https://medium.com/@s12deff/hide-processes-in-task-manager-64043c7c2c4b)  <img src="https://go-skill-icons.vercel.app/api/icons?i=cpp,c&size=32" width="40" />
 
 </h2>
 
