@@ -918,23 +918,6 @@ impl eframe::App for AntiInterviewApp {
         let theme = ctx.theme();
         let focused = ctx.input(|i| i.focused);
 
-        // Custom title bar for borderless window
-        egui::TopBottomPanel::top("title_bar").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.add_space(10.0);
-                ui.label(RichText::new("Anti-Interview").strong().size(14.0));
-                
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if ui.button(RichText::new("✕").size(16.0)).clicked() {
-                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                    }
-                    if ui.button(RichText::new("−").size(16.0)).clicked() {
-                        ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(true));
-                    }
-                });
-            });
-        });
-
         egui::SidePanel::left("side_menu")
             .resizable(false)
             .exact_width(if self.menu_expanded { 200.0 } else { SIDE_PANEL_WIDTH })
@@ -988,7 +971,7 @@ pub fn start(state: AppState) {
             .with_inner_size(config.ui.window_size)
             .with_resizable(true)
             .with_min_inner_size([300.0, 400.0])
-            .with_decorations(false),
+            .with_decorations(true),
         renderer: Renderer::Glow,
         vsync: true,
         ..Default::default()

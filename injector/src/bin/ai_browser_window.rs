@@ -37,7 +37,7 @@ fn main() {
     let window = WindowBuilder::new()
         .with_title(&title)
         .with_inner_size(tao::dpi::LogicalSize::new(1200, 800))
-        .with_decorations(false)
+        .with_decorations(true)
         .build(&event_loop)
         .expect("Failed to create window");
 

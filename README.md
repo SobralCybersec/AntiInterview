@@ -231,8 +231,7 @@ Funções experimentais para testar manipulação de janelas:
 6. Navegador é automaticamente ocultado se **Auto-Ocultar** estiver ativo
 
 **Recursos:**
-- Janela sem bordas (borderless) para aparência profissional
-- Botões de fechar/minimizar personalizados
+- Janela com bordas nativas para fácil redimensionamento
 - Monitoramento automático de processo
 - Estado sincronizado com aplicação principal
 
@@ -267,8 +266,6 @@ Funções experimentais para testar manipulação de janelas:
 * [x] Screenshot silencioso com cópia para área de transferência
 * [x] Auto-ocultar navegador AI
 * [x] 7 atalhos configuráveis
-* [x] Janelas borderless para navegador AI
-* [x] Monitoramento automático de processo do navegador
 * [x] Ocultar Cursor via winit set_cursor_visible (toggleável)
 * [ ] UI de customização de atalhos
 * [ ] Perfis de janelas
