@@ -7,7 +7,7 @@ use eframe::egui::{ColorImage, Context, TextureHandle};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tracing::{debug, error, info};
-use windows_capture::monitor::Monitor;
+use crate::infrastructure::Monitor;
 
 pub enum AppCommand {
     RefreshWindows,

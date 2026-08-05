@@ -1,10 +1,8 @@
-use {
-    std::{env, io},
-    winresource::WindowsResource,
-};
-
-fn main() -> io::Result<()> {
-    if env::var_os("CARGO_CFG_WINDOWS").is_some() {
+fn main() -> std::io::Result<()> {
+    // Icon embedding is Windows-only; winresource is a Windows-only build-dep.
+    #[cfg(windows)]
+    {
+        use winresource::WindowsResource;
         WindowsResource::new()
             .set_icon("../assets/icons/invicon.ico")
             .compile()?;

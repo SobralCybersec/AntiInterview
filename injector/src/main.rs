@@ -6,7 +6,11 @@ mod infrastructure;
 mod presentation;
 
 use application::WindowService;
-use infrastructure::{FileConfigurationRepository, WindowsWindowRepository};
+use infrastructure::FileConfigurationRepository;
+#[cfg(windows)]
+use infrastructure::WindowsWindowRepository;
+#[cfg(target_os = "linux")]
+use infrastructure::LinuxWindowRepository;
 use presentation::AppState;
 use std::sync::Arc;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
@@ -49,7 +53,10 @@ fn main() {
 
     tracing::info!("Anti-Interview Started");
 
+    #[cfg(windows)]
     let window_repo = Arc::new(WindowsWindowRepository::new());
+    #[cfg(target_os = "linux")]
+    let window_repo = Arc::new(LinuxWindowRepository::new());
     let config_repo = Arc::new(FileConfigurationRepository::new());
     let window_service = Arc::new(WindowService::new(window_repo));
 

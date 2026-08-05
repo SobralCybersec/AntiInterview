@@ -727,8 +727,7 @@ impl AntiInterviewApp {
             if ui.checkbox(&mut self.test_process_stealth, "Ocultar Processo do Task Manager").changed() {
                 if self.test_process_stealth {
                     use crate::domain::ProcessId;
-                    use windows::Win32::System::Threading::GetCurrentProcessId;
-                    let current_pid = unsafe { GetCurrentProcessId() };
+                    let current_pid = std::process::id();
                     self.state.set_process_stealth(ProcessId::new(current_pid));
                 } else {
                     use crate::domain::ProcessId;
@@ -853,6 +852,7 @@ impl eframe::App for AntiInterviewApp {
         }
 
         if ctx.input(|i| i.viewport().close_requested()) {
+            tracing::warn!("close_requested fired (minimize_to_tray={})", self.state.config().behavior.minimize_to_tray);
             if self.state.config().behavior.minimize_to_tray {
                 self.state.set_window_visible(false);
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
