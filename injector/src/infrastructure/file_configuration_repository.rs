@@ -31,11 +31,11 @@ impl ConfigurationRepository for FileConfigurationRepository {
             return Ok(default_config);
         }
 
-        let content = fs::read_to_string(&config_path)
-            .context("Failed to read configuration file")?;
+        let content =
+            fs::read_to_string(&config_path).context("Failed to read configuration file")?;
 
-        let config: Configuration = toml::from_str(&content)
-            .context("Failed to parse configuration")?;
+        let config: Configuration =
+            toml::from_str(&content).context("Failed to parse configuration")?;
 
         debug!("Configuration loaded from {:?}", config_path);
         Ok(config)
@@ -45,15 +45,13 @@ impl ConfigurationRepository for FileConfigurationRepository {
         let config_path = Self::config_path();
 
         if let Some(parent) = config_path.parent() {
-            fs::create_dir_all(parent)
-                .context("Failed to create configuration directory")?;
+            fs::create_dir_all(parent).context("Failed to create configuration directory")?;
         }
 
-        let content = toml::to_string_pretty(config)
-            .context("Failed to serialize configuration")?;
+        let content =
+            toml::to_string_pretty(config).context("Failed to serialize configuration")?;
 
-        fs::write(&config_path, content)
-            .context("Failed to write configuration file")?;
+        fs::write(&config_path, content).context("Failed to write configuration file")?;
 
         debug!("Configuration saved to {:?}", config_path);
         Ok(())

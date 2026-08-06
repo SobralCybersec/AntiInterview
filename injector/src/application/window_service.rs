@@ -20,18 +20,10 @@ impl WindowService {
         self.repository.find_all()
     }
 
-    pub fn filter_windows(&self, windows: &[Window], filter: &str) -> Vec<Window> {
-        windows
-            .iter()
-            .filter(|w| w.matches_filter(filter))
-            .cloned()
-            .collect()
-    }
-    
     pub fn set_cursor_capture_hidden(&self, hidden: bool) -> Result<()> {
         self.repository.set_cursor_capture_hidden(hidden)
     }
-    
+
     pub fn toggle_visibility(
         &self,
         process_id: &ProcessId,

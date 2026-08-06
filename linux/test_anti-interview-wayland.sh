@@ -11,6 +11,7 @@ PASS=0; FAIL=0
 ok()   { PASS=$((PASS+1)); echo "  ok   - $1"; }
 bad()  { FAIL=$((FAIL+1)); echo "  FAIL - $1"; }
 check(){ if eval "$2"; then ok "$1"; else bad "$1 ($2)"; fi; }
+run()  { bash "$SCRIPT" "$@"; }
 
 # ---- sandbox: temp HYPR_DIR + mock hyprctl on PATH --------------------------
 WORK="$(mktemp -d)"
@@ -46,22 +47,22 @@ export PATH="$BIN:$PATH"
 echo "== anti-interview-wayland tests =="
 
 # ---- offline unit logic -----------------------------------------------------
-"$SCRIPT" selftest >/dev/null 2>&1 && ok "selftest passes" || bad "selftest passes"
+run selftest >/dev/null 2>&1 && ok "selftest passes" || bad "selftest passes"
 
 # ---- setup wires the include once, idempotently -----------------------------
-"$SCRIPT" setup >/dev/null
+run setup >/dev/null
 check "setup wires require" "grep -q 'require(\"hypr.anti-interview\")' '$HYPR_DIR/hyprland.lua'"
-"$SCRIPT" setup >/dev/null
+run setup >/dev/null
 check "setup idempotent (one require line)" "[ \$(grep -c 'require(\"hypr.anti-interview\")' '$HYPR_DIR/hyprland.lua') -eq 1 ]"
 
 # ---- on / status ------------------------------------------------------------
-"$SCRIPT" on firefox >/dev/null
+run on firefox >/dev/null
 check "on firefox writes rule" "grep -q 'o.window(\"firefox\", { no_screen_share = true })' '$HYPR_DIR/anti-interview.lua'"
-check "status shows firefox" "\"$SCRIPT\" status | grep -q firefox"
+check "status shows firefox" "run status | grep -q firefox"
 check "getprop reflects hidden" "[ \"\$(hyprctl getprop address:0x1 no_screen_share)\" = true ]"
 
 # ---- idempotent on (no duplicate) -------------------------------------------
-"$SCRIPT" on firefox >/dev/null
+run on firefox >/dev/null
 check "on is idempotent (no dup)" "[ \$(grep -c 'o.window(\"firefox\"' '$HYPR_DIR/anti-interview.lua') -eq 1 ]"
 
 # ---- REGRESSION: managed file must never be malformed Lua --------------------
@@ -69,24 +70,24 @@ check "no doubled-quote regression" "! grep -qE 'o\\.window\\(\"[^\"]*\"\"' '$HY
 check "config clean per hyprctl" "[ -z \"\$(hyprctl configerrors)\" ]"
 
 # ---- second class + off removes only the target -----------------------------
-"$SCRIPT" on kitty >/dev/null
+run on kitty >/dev/null
 check "two classes hidden" "[ \$(grep -c 'o.window(' '$HYPR_DIR/anti-interview.lua') -eq 2 ]"
-"$SCRIPT" off firefox >/dev/null
+run off firefox >/dev/null
 check "off removes firefox only" "! grep -q 'firefox' '$HYPR_DIR/anti-interview.lua' && grep -q 'kitty' '$HYPR_DIR/anti-interview.lua'"
 
 # ---- toggle flips state -----------------------------------------------------
-"$SCRIPT" toggle kitty >/dev/null   # kitty was on -> off
+run toggle kitty >/dev/null   # kitty was on -> off
 check "toggle off kitty" "! grep -q 'kitty' '$HYPR_DIR/anti-interview.lua'"
-"$SCRIPT" toggle kitty >/dev/null   # off -> on
+run toggle kitty >/dev/null   # off -> on
 check "toggle on kitty" "grep -q 'o.window(\"kitty\"' '$HYPR_DIR/anti-interview.lua'"
 
 # ---- clear ------------------------------------------------------------------
-"$SCRIPT" clear >/dev/null
+run clear >/dev/null
 check "clear removes all rules" "[ \$(grep -c 'o.window(' '$HYPR_DIR/anti-interview.lua') -eq 0 ]"
 check "clear keeps header" "grep -q 'DO NOT EDIT' '$HYPR_DIR/anti-interview.lua'"
 
 # ---- list (identification) --------------------------------------------------
-check "list shows firefox+kitty" "[ \$(\"$SCRIPT\" list | wc -l) -eq 2 ]"
+check "list shows firefox+kitty" "[ \$(run list | wc -l) -eq 2 ]"
 
 echo "== $PASS passed, $FAIL failed =="
 [ "$FAIL" -eq 0 ]

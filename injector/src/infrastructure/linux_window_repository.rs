@@ -27,13 +27,22 @@ impl LinuxWindowRepository {
         Self { script }
     }
 
+    fn engine_command(&self) -> Command {
+        let mut command = Command::new("bash");
+        command.arg(&self.script);
+        command
+    }
+
     fn hyprctl_clients(&self) -> Result<Vec<Value>> {
         let out = Command::new("hyprctl")
             .args(["clients", "-j"])
             .output()
             .context("running `hyprctl clients -j` (is Hyprland running?)")?;
         if !out.status.success() {
-            return Err(anyhow!("hyprctl clients failed: {}", String::from_utf8_lossy(&out.stderr)));
+            return Err(anyhow!(
+                "hyprctl clients failed: {}",
+                String::from_utf8_lossy(&out.stderr)
+            ));
         }
         let v: Value = serde_json::from_slice(&out.stdout).context("parsing hyprctl JSON")?;
         Ok(v.as_array().cloned().unwrap_or_default())
@@ -41,7 +50,7 @@ impl LinuxWindowRepository {
 
     /// Classes currently hidden, per the engine's managed file.
     fn hidden_classes(&self) -> Vec<String> {
-        Command::new(&self.script)
+        self.engine_command()
             .arg("classes")
             .output()
             .ok()
@@ -65,7 +74,8 @@ impl LinuxWindowRepository {
     }
 
     fn run_engine(&self, args: &[&str]) -> Result<()> {
-        let out = Command::new(&self.script)
+        let out = self
+            .engine_command()
             .args(args)
             .output()
             .with_context(|| format!("running `{} {}`", self.script, args.join(" ")))?;
@@ -92,11 +102,19 @@ impl WindowRepository for LinuxWindowRepository {
         let clients = self.hyprctl_clients()?;
         let mut windows = Vec::with_capacity(clients.len());
         for c in clients {
-            let class = c.get("class").and_then(Value::as_str).unwrap_or("").to_string();
+            let class = c
+                .get("class")
+                .and_then(Value::as_str)
+                .unwrap_or("")
+                .to_string();
             if class.is_empty() {
                 continue;
             }
-            let title = c.get("title").and_then(Value::as_str).unwrap_or("").to_string();
+            let title = c
+                .get("title")
+                .and_then(Value::as_str)
+                .unwrap_or("")
+                .to_string();
             let pid = c.get("pid").and_then(Value::as_u64).unwrap_or(0) as u32;
             // Hyprland addresses are 64-bit hex; fold to u32 for WindowId identity.
             let id = c
@@ -133,6 +151,12 @@ impl WindowRepository for LinuxWindowRepository {
             .class_for_pid(process_id.value())
             .ok_or_else(|| anyhow!("no Hyprland window found for pid {}", process_id.value()))?;
         self.run_engine(&[if hidden { "on" } else { "off" }, &class])
+    }
+
+    fn set_cursor_capture_hidden(&self, _hidden: bool) -> Result<()> {
+        Err(anyhow!(
+            "cursor capture hiding is not supported on Linux yet"
+        ))
     }
 
     fn set_process_stealth(&self, _process_id: &ProcessId) -> Result<()> {

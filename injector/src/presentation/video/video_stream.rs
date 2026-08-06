@@ -40,4 +40,20 @@ impl VideoStream {
     pub fn is_empty(&self) -> bool {
         self.frames.is_empty()
     }
+
+    pub fn time_until_next_frame(&self) -> std::time::Duration {
+        self.frame_delay.saturating_sub(self.last_update.elapsed())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn repaint_delay_does_not_exceed_frame_delay() {
+        let stream = VideoStream::new(Vec::new(), 10);
+
+        assert!(stream.time_until_next_frame() <= std::time::Duration::from_millis(100));
+    }
 }

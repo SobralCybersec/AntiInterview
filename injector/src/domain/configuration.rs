@@ -20,15 +20,15 @@ impl Hotkeys {
     fn default_silent_screenshot() -> String {
         "Ctrl+Shift+P".to_string()
     }
-    
+
     fn default_refresh_windows() -> String {
         "Ctrl+Shift+R".to_string()
     }
-    
+
     fn default_toggle_preview() -> String {
         "Ctrl+Shift+V".to_string()
     }
-    
+
     fn default_open_ai_browser() -> String {
         "Ctrl+Shift+A".to_string()
     }
@@ -40,10 +40,10 @@ impl Default for Hotkeys {
             screenshot: "Ctrl+Shift+S".to_string(),
             hide_window: "Ctrl+Shift+H".to_string(),
             show_gui: "Ctrl+Shift+I".to_string(),
-            silent_screenshot: "Ctrl+Shift+P".to_string(),
-            refresh_windows: "Ctrl+Shift+R".to_string(),
-            toggle_preview: "Ctrl+Shift+V".to_string(),
-            open_ai_browser: "Ctrl+Shift+A".to_string(),
+            silent_screenshot: Self::default_silent_screenshot(),
+            refresh_windows: Self::default_refresh_windows(),
+            toggle_preview: Self::default_toggle_preview(),
+            open_ai_browser: Self::default_open_ai_browser(),
         }
     }
 }
@@ -92,6 +92,24 @@ pub struct UiSettings {
     pub auto_hide_ai_browser: bool,
     #[serde(default)]
     pub hide_cursor: bool,
+}
+
+impl UiSettings {
+    pub fn enabled_hooks(&self) -> Vec<String> {
+        [
+            (self.hook_notepad, "hook_notepad.dll"),
+            (self.hook_firefox, "hook_firefox.dll"),
+            (self.hook_edge, "hook_edge.dll"),
+            (self.hook_chrome, "hook_chrome.dll"),
+            (self.hook_vscode, "hook_vscode.dll"),
+            (self.hook_visualstudio, "hook_visualstudio.dll"),
+            (self.hook_antiinterview, "hook_antiinterview.dll"),
+        ]
+        .into_iter()
+        .filter(|(enabled, _)| *enabled)
+        .map(|(_, dll)| dll.to_string())
+        .collect()
+    }
 }
 
 impl Default for UiSettings {
@@ -174,6 +192,21 @@ mod tests {
         assert!(!ui.show_preview);
         assert!(!ui.hide_from_taskbar);
         assert_eq!(ui.window_size, (320.0, 540.0));
+        assert!(ui.enabled_hooks().is_empty());
+    }
+
+    #[test]
+    fn test_enabled_hooks() {
+        let ui = UiSettings {
+            hook_notepad: true,
+            hook_antiinterview: true,
+            ..UiSettings::default()
+        };
+
+        assert_eq!(
+            ui.enabled_hooks(),
+            ["hook_notepad.dll", "hook_antiinterview.dll"]
+        );
     }
 
     #[test]
@@ -210,5 +243,14 @@ mod tests {
         "#;
         let config: Configuration = toml::from_str(toml_str).unwrap();
         assert_eq!(config.hotkeys.screenshot, "Ctrl+S");
+    }
+
+    #[test]
+    fn test_example_configuration_matches_schema() {
+        let config: Configuration =
+            toml::from_str(include_str!("../../../config.example.toml")).unwrap();
+
+        assert_eq!(config.hotkeys.silent_screenshot, "Ctrl+Shift+P");
+        assert!(config.ui.auto_hide_ai_browser);
     }
 }

@@ -1,5 +1,5 @@
-use eframe::egui::{self, Vec2};
 use super::VideoStream;
+use eframe::egui::{self, Vec2};
 
 pub struct VideoRenderer {
     video_stream: Option<VideoStream>,
@@ -7,9 +7,7 @@ pub struct VideoRenderer {
 
 impl VideoRenderer {
     pub fn new() -> Self {
-        Self {
-            video_stream: None,
-        }
+        Self { video_stream: None }
     }
 
     pub fn load_video(&mut self, video_stream: VideoStream) {
@@ -20,11 +18,11 @@ impl VideoRenderer {
         if let Some(stream) = &mut self.video_stream {
             if let Some(texture) = stream.current_frame() {
                 ui.add(
-                    egui::Image::from_texture(texture)
-                        .fit_to_exact_size(Vec2::new(width, height))
+                    egui::Image::from_texture(texture).fit_to_exact_size(Vec2::new(width, height)),
                 );
-                ui.ctx().request_repaint();
             }
+            ui.ctx()
+                .request_repaint_after(stream.time_until_next_frame());
         }
     }
 

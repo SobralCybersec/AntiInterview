@@ -16,13 +16,13 @@ pub struct TrayManager {
 impl TrayManager {
     pub fn new() -> Result<Self> {
         let icon_bytes = include_bytes!("../../../assets/icons/invicon.ico");
-        let img = ImageReader::with_format(Cursor::new(icon_bytes), image::ImageFormat::Ico)
-            .decode()?;
-        
+        let img =
+            ImageReader::with_format(Cursor::new(icon_bytes), image::ImageFormat::Ico).decode()?;
+
         let rgba = img.to_rgba8();
         let width = img.width();
         let height = img.height();
-        
+
         let icon = Icon::from_rgba(rgba.into_raw(), width, height)?;
 
         let tray_menu = Menu::new();

@@ -1,0 +1,158 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to release (for example, v1.2.0)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+jobs:
+  release:
+    name: Build and publish Windows release
+    runs-on: windows-latest
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          persist-credentials: false
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly-2026-08-04
+          components: rustfmt
+
+      - name: Validate release version
+        shell: pwsh
+        run: |
+          $metadata = cargo metadata --locked --no-deps --format-version 1 | ConvertFrom-Json
+          $app = $metadata.packages | Where-Object name -EQ "anti-interview"
+          if ($null -eq $app) {
+            throw "anti-interview package missing from Cargo metadata"
+          }
+
+          $expectedTag = "v$($app.version)"
+          if ($env:RELEASE_TAG -cne $expectedTag) {
+            throw "Release tag '$env:RELEASE_TAG' must equal '$expectedTag'"
+          }
+
+          $installer = Get-Content installer.iss -Raw
+          $match = [regex]::Match($installer, '#define MyAppVersion "([^"]+)"')
+          if (-not $match.Success -or $match.Groups[1].Value -cne $app.version) {
+            throw "installer.iss version must equal $($app.version)"
+          }
+
+          "APP_VERSION=$($app.version)" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Test and build Rust release
+        run: |
+          cargo fmt --all -- --check
+          cargo test --workspace --locked
+          cargo build --workspace --release --locked
+
+      - name: Install Detours
+        shell: pwsh
+        run: |
+          $vcpkg = Join-Path $env:VCPKG_INSTALLATION_ROOT "vcpkg.exe"
+          & $vcpkg install detours:x64-windows
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build hook DLLs
+        shell: pwsh
+        run: |
+          $toolchain = Join-Path $env:VCPKG_INSTALLATION_ROOT "scripts/buildsystems/vcpkg.cmake"
+          cmake -S hook -B hook/out/build/x64-Release -A x64 `
+            -DCMAKE_TOOLCHAIN_FILE="$toolchain" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          cmake --build hook/out/build/x64-Release --config Release --parallel
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build installer and portable archive
+        shell: pwsh
+        run: |
+          $iscc = Join-Path ${env:ProgramFiles(x86)} "Inno Setup 6/ISCC.exe"
+          & $iscc "/DMyHookDir=hook\out\build\x64-Release" installer.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $archiveName = "anti-interview-v$env:APP_VERSION-portable.zip"
+          $stage = Join-Path $env:RUNNER_TEMP "anti-interview-portable"
+          $dist = Join-Path $PWD "dist"
+          New-Item -ItemType Directory -Force -Path $stage, $dist | Out-Null
+
+          $files = @(
+            "target/release/anti-interview.exe"
+            "target/release/ai_browser_window.exe"
+            "target/release/utils.dll"
+            "hook/out/build/x64-Release/hook_notepad.dll"
+            "hook/out/build/x64-Release/hook_firefox.dll"
+            "hook/out/build/x64-Release/hook_edge.dll"
+            "hook/out/build/x64-Release/hook_chrome.dll"
+            "hook/out/build/x64-Release/hook_vscode.dll"
+            "hook/out/build/x64-Release/hook_visualstudio.dll"
+            "hook/out/build/x64-Release/hook_antiinterview.dll"
+            "README.md"
+            "LICENSE"
+            "RELEASE_NOTES.md"
+          )
+          foreach ($file in $files) {
+            if (-not (Test-Path -LiteralPath $file -PathType Leaf)) {
+              throw "Release input missing: $file"
+            }
+            Copy-Item -LiteralPath $file -Destination $stage
+          }
+          Copy-Item -LiteralPath assets -Destination $stage -Recurse
+
+          $archive = Join-Path $dist $archiveName
+          Compress-Archive -Path "$stage/*" -DestinationPath $archive -CompressionLevel Optimal
+
+          $installer = "installer/anti-interview-setup-v$env:APP_VERSION.exe"
+          if (-not (Test-Path -LiteralPath $installer -PathType Leaf)) {
+            throw "Installer missing: $installer"
+          }
+          Copy-Item -LiteralPath $installer -Destination $dist
+
+          $releaseFiles = @(
+            $archive
+            (Join-Path $dist (Split-Path $installer -Leaf))
+          )
+          $checksums = foreach ($file in $releaseFiles) {
+            $hash = Get-FileHash -Algorithm SHA256 -LiteralPath $file
+            "$($hash.Hash.ToLowerInvariant())  $(Split-Path $file -Leaf)"
+          }
+          $checksums | Set-Content -Path "$dist/SHA256SUMS.txt" -Encoding ascii
+
+      - name: Create or update GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $assets = Get-ChildItem dist -File | ForEach-Object FullName
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:RELEASE_TAG $assets --clobber
+          } else {
+            gh release create $env:RELEASE_TAG $assets `
+              --verify-tag `
+              --generate-notes `
+              --title "Anti-Interview $env:APP_VERSION"
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

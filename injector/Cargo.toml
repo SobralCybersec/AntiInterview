@@ -5,19 +5,17 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1"
-clap = { version = "4.5.49", features = ["derive"] }
 crossbeam-channel = "0.5.15"
 eframe = { version = "0.33.0", default-features = false, features = ["glow", "default_fonts", "persistence"] }
 egui_extras = { version = "0.33.0", features = ["image"] }
-image = { version = "0.25.8", default-features = false, features = ["ico", "gif", "png", "jpeg"]}
-libloading = "0.8"
+image = { version = "0.25.10", default-features = false, features = ["ico", "gif", "png", "jpeg"]}
 tracing = "0.1.41"
-tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.8"
 dirs = "6.0"
 open = "5"
-wry = "0.55"
+wry = "0.55.1"
 tao = "0.30"
 arboard = "3"
 
@@ -25,9 +23,9 @@ arboard = "3"
 # (tray-icon pulls GTK3 + libxdo on Linux; the Linux build stubs the tray).
 [target.'cfg(windows)'.dependencies]
 tray-icon = "0.18"
-dll-syringe = { version = "0.17.0", features = ["into-x86-from-x64", "rpc-raw"] }
+dll-syringe = { version = "0.18.2", features = ["into-x86-from-x64", "rpc-raw"] }
 windows = { version = "0.62.2", features = ["Win32_UI_WindowsAndMessaging" , "Win32_Graphics_Dwm", "Win32_System_Console", "Win32_System_LibraryLoader", "Win32_UI_Input_KeyboardAndMouse", "Win32_Graphics_Gdi", "Win32_System_Diagnostics_ToolHelp"] }
-windows-capture = { version = "2.0.0-alpha.7" }
+windows-capture = "2.0.0"
 
 # Linux-only: JSON for `hyprctl clients -j`, plus winit's Wayland/X11 backends
 # (base eframe features union with these on Linux).
@@ -41,7 +39,6 @@ winresource = "0.1.23"
 [[bin]]
 name = "anti-interview"
 path = "src/main.rs"
-<<<<<<< HEAD
 
 [[bin]]
 name = "ai_browser_window"
@@ -50,5 +47,3 @@ path = "src/bin/ai_browser_window.rs"
 [[bin]]
 name = "test_wry_browser"
 path = "src/bin/test_wry_browser.rs"
-=======
->>>>>>> 1510699 (Linux Support)

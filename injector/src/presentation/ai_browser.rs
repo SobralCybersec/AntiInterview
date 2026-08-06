@@ -28,7 +28,12 @@ impl AiTab {
     }
 
     pub fn all() -> &'static [AiTab] {
-        &[AiTab::ChatGpt, AiTab::Antigravity, AiTab::Gemini, AiTab::Claude]
+        &[
+            AiTab::ChatGpt,
+            AiTab::Antigravity,
+            AiTab::Gemini,
+            AiTab::Claude,
+        ]
     }
 }
 
@@ -83,21 +88,18 @@ impl AiBrowserState {
     pub fn open_browser_window(&mut self) {
         let url = self.active_tab.url().to_string();
         let title = format!("AI Browser - {} - Anti-Interview", self.active_tab.label());
-        
-        tracing::info!("=== OPENING AI BROWSER WINDOW ===");
-        tracing::info!("Target URL: {}", url);
-        tracing::info!("Active Tab: {:?}", self.active_tab);
-        tracing::info!("Window Title: {}", title);
-        
+
+        tracing::debug!("Opening AI browser: tab={:?}, url={}", self.active_tab, url);
+
         let exe_path = std::env::current_exe()
             .ok()
             .and_then(|p| p.parent().map(|p| p.to_path_buf()))
             .unwrap_or_else(|| std::path::PathBuf::from("."));
-        
+
         let browser_exe = exe_path.join("ai_browser_window.exe");
-        
-        tracing::info!("Browser executable: {:?}", browser_exe);
-        
+
+        tracing::debug!("Browser executable: {:?}", browser_exe);
+
         match std::process::Command::new(&browser_exe)
             .arg(&url)
             .arg(&title)
@@ -106,23 +108,22 @@ impl AiBrowserState {
             Ok(mut child) => {
                 let browser_open = Arc::clone(&self.browser_open);
                 *browser_open.lock().unwrap() = true;
-                tracing::info!("Browser window spawned successfully with PID: {}", child.id());
-                
-                std::thread::spawn(move || {
-                    match child.wait() {
-                        Ok(status) => {
-                            tracing::info!("Browser window closed with status: {:?}", status);
-                            *browser_open.lock().unwrap() = false;
-                        }
-                        Err(e) => {
-                            tracing::error!("Failed to wait for browser process: {:?}", e);
-                            *browser_open.lock().unwrap() = false;
-                        }
+                tracing::info!(
+                    "Browser window spawned successfully with PID: {}",
+                    child.id()
+                );
+
+                std::thread::spawn(move || match child.wait() {
+                    Ok(status) => {
+                        tracing::info!("Browser window closed with status: {:?}", status);
+                        *browser_open.lock().unwrap() = false;
+                    }
+                    Err(e) => {
+                        tracing::error!("Failed to wait for browser process: {:?}", e);
+                        *browser_open.lock().unwrap() = false;
                     }
                 });
-                
-                std::thread::sleep(std::time::Duration::from_millis(500));
-                
+
                 if let Some(on_spawn) = &self.on_browser_spawn {
                     on_spawn();
                 }
@@ -172,9 +173,9 @@ mod tests {
     #[test]
     fn test_ai_browser_state_tab_switching() {
         let mut state = AiBrowserState::default();
-        state.active_tab = AiTab::Claude;
+        state.select_tab(AiTab::Claude);
         assert_eq!(state.active_tab, AiTab::Claude);
-        state.active_tab = AiTab::Gemini;
+        state.select_tab(AiTab::Gemini);
         assert_eq!(state.active_tab, AiTab::Gemini);
     }
 
@@ -182,7 +183,10 @@ mod tests {
     fn test_ai_browser_state_screenshot_path() {
         let mut state = AiBrowserState::default();
         state.set_screenshot_path("/tmp/screenshot.png".to_string());
-        assert_eq!(state.last_screenshot_path.as_deref(), Some("/tmp/screenshot.png"));
+        assert_eq!(
+            state.last_screenshot_path.as_deref(),
+            Some("/tmp/screenshot.png")
+        );
         state.clear_screenshot_path();
         assert!(state.last_screenshot_path.is_none());
     }

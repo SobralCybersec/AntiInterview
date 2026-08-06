@@ -35,7 +35,7 @@ mod tests {
     #[test]
     fn test_ai_browser_tab_switching_all_tabs() {
         let mut state = AiBrowserState::default();
-        
+
         for &tab in AiTab::all() {
             state.active_tab = tab;
             assert_eq!(state.active_tab, tab);
@@ -45,15 +45,21 @@ mod tests {
     #[test]
     fn test_ai_browser_screenshot_path_lifecycle() {
         let mut state = AiBrowserState::default();
-        
+
         assert!(state.last_screenshot_path.is_none());
-        
+
         state.set_screenshot_path("/tmp/test1.png".to_string());
-        assert_eq!(state.last_screenshot_path.as_deref(), Some("/tmp/test1.png"));
-        
+        assert_eq!(
+            state.last_screenshot_path.as_deref(),
+            Some("/tmp/test1.png")
+        );
+
         state.set_screenshot_path("/tmp/test2.png".to_string());
-        assert_eq!(state.last_screenshot_path.as_deref(), Some("/tmp/test2.png"));
-        
+        assert_eq!(
+            state.last_screenshot_path.as_deref(),
+            Some("/tmp/test2.png")
+        );
+
         state.clear_screenshot_path();
         assert!(state.last_screenshot_path.is_none());
     }
@@ -122,7 +128,6 @@ mod tests {
     }
 }
 
-
 #[cfg(test)]
 mod hotkey_integration_tests {
     use crate::domain::configuration::Configuration;
@@ -130,7 +135,7 @@ mod hotkey_integration_tests {
     #[test]
     fn test_all_hotkeys_are_unique() {
         let config = Configuration::default();
-        let hotkeys = vec![
+        let hotkeys = [
             &config.hotkeys.screenshot,
             &config.hotkeys.hide_window,
             &config.hotkeys.show_gui,
@@ -139,7 +144,7 @@ mod hotkey_integration_tests {
             &config.hotkeys.toggle_preview,
             &config.hotkeys.open_ai_browser,
         ];
-        
+
         for i in 0..hotkeys.len() {
             for j in (i + 1)..hotkeys.len() {
                 assert_ne!(
@@ -163,7 +168,7 @@ mod hotkey_integration_tests {
             &config.hotkeys.toggle_preview,
             &config.hotkeys.open_ai_browser,
         ];
-        
+
         for hotkey in hotkeys {
             assert!(
                 hotkey.contains("Ctrl") || hotkey.contains("Alt") || hotkey.contains("Shift"),
@@ -178,14 +183,29 @@ mod hotkey_integration_tests {
         let original = Configuration::default();
         let serialized = toml::to_string(&original).unwrap();
         let deserialized: Configuration = toml::from_str(&serialized).unwrap();
-        
+
         assert_eq!(original.hotkeys.screenshot, deserialized.hotkeys.screenshot);
-        assert_eq!(original.hotkeys.hide_window, deserialized.hotkeys.hide_window);
+        assert_eq!(
+            original.hotkeys.hide_window,
+            deserialized.hotkeys.hide_window
+        );
         assert_eq!(original.hotkeys.show_gui, deserialized.hotkeys.show_gui);
-        assert_eq!(original.hotkeys.silent_screenshot, deserialized.hotkeys.silent_screenshot);
-        assert_eq!(original.hotkeys.refresh_windows, deserialized.hotkeys.refresh_windows);
-        assert_eq!(original.hotkeys.toggle_preview, deserialized.hotkeys.toggle_preview);
-        assert_eq!(original.hotkeys.open_ai_browser, deserialized.hotkeys.open_ai_browser);
+        assert_eq!(
+            original.hotkeys.silent_screenshot,
+            deserialized.hotkeys.silent_screenshot
+        );
+        assert_eq!(
+            original.hotkeys.refresh_windows,
+            deserialized.hotkeys.refresh_windows
+        );
+        assert_eq!(
+            original.hotkeys.toggle_preview,
+            deserialized.hotkeys.toggle_preview
+        );
+        assert_eq!(
+            original.hotkeys.open_ai_browser,
+            deserialized.hotkeys.open_ai_browser
+        );
     }
 
     #[test]
@@ -196,7 +216,6 @@ mod hotkey_integration_tests {
     }
 }
 
-
 #[cfg(test)]
 mod wry_browser_tests {
     use crate::presentation::{AiBrowserState, AiTab};
@@ -204,34 +223,44 @@ mod wry_browser_tests {
     #[test]
     fn test_browser_state_default_not_open() {
         let state = AiBrowserState::default();
-        assert!(!state.is_browser_open(), "Browser should not be open by default");
+        assert!(
+            !state.is_browser_open(),
+            "Browser should not be open by default"
+        );
     }
 
     #[test]
     fn test_browser_state_default_tab_is_chatgpt() {
         let state = AiBrowserState::default();
-        assert_eq!(state.active_tab, AiTab::ChatGpt, "Default tab should be ChatGPT");
+        assert_eq!(
+            state.active_tab,
+            AiTab::ChatGpt,
+            "Default tab should be ChatGPT"
+        );
     }
 
     #[test]
     fn test_browser_state_no_screenshot_path_initially() {
         let state = AiBrowserState::default();
-        assert!(state.last_screenshot_path.is_none(), "No screenshot path should exist initially");
+        assert!(
+            state.last_screenshot_path.is_none(),
+            "No screenshot path should exist initially"
+        );
     }
 
     #[test]
     fn test_tab_selection_changes_active_tab() {
         let mut state = AiBrowserState::default();
-        
+
         state.select_tab(AiTab::Claude);
         assert_eq!(state.active_tab, AiTab::Claude);
-        
+
         state.select_tab(AiTab::Gemini);
         assert_eq!(state.active_tab, AiTab::Gemini);
-        
+
         state.select_tab(AiTab::Antigravity);
         assert_eq!(state.active_tab, AiTab::Antigravity);
-        
+
         state.select_tab(AiTab::ChatGpt);
         assert_eq!(state.active_tab, AiTab::ChatGpt);
     }
@@ -240,7 +269,11 @@ mod wry_browser_tests {
     fn test_all_tabs_have_https_urls() {
         for &tab in AiTab::all() {
             let url = tab.url();
-            assert!(url.starts_with("https://"), "Tab {} should have HTTPS URL", tab.label());
+            assert!(
+                url.starts_with("https://"),
+                "Tab {} should have HTTPS URL",
+                tab.label()
+            );
         }
     }
 
@@ -248,13 +281,13 @@ mod wry_browser_tests {
     fn test_all_tabs_have_valid_domains() {
         let chatgpt_url = AiTab::ChatGpt.url();
         assert!(chatgpt_url.contains("chatgpt.com"));
-        
+
         let antigravity_url = AiTab::Antigravity.url();
         assert!(antigravity_url.contains("antigravity.ai"));
-        
+
         let gemini_url = AiTab::Gemini.url();
         assert!(gemini_url.contains("gemini.google.com"));
-        
+
         let claude_url = AiTab::Claude.url();
         assert!(claude_url.contains("claude.ai"));
     }
@@ -275,13 +308,13 @@ mod wry_browser_tests {
     #[test]
     fn test_screenshot_path_can_be_set_and_cleared() {
         let mut state = AiBrowserState::default();
-        
+
         let test_path = "C:\\temp\\screenshot_12345.png";
         state.set_screenshot_path(test_path.to_string());
-        
+
         assert!(state.last_screenshot_path.is_some());
         assert_eq!(state.last_screenshot_path.as_deref(), Some(test_path));
-        
+
         state.clear_screenshot_path();
         assert!(state.last_screenshot_path.is_none());
     }
@@ -289,13 +322,13 @@ mod wry_browser_tests {
     #[test]
     fn test_screenshot_path_can_be_overwritten() {
         let mut state = AiBrowserState::default();
-        
+
         state.set_screenshot_path("path1.png".to_string());
         assert_eq!(state.last_screenshot_path.as_deref(), Some("path1.png"));
-        
+
         state.set_screenshot_path("path2.png".to_string());
         assert_eq!(state.last_screenshot_path.as_deref(), Some("path2.png"));
-        
+
         state.set_screenshot_path("path3.png".to_string());
         assert_eq!(state.last_screenshot_path.as_deref(), Some("path3.png"));
     }
@@ -304,14 +337,14 @@ mod wry_browser_tests {
     fn test_browser_state_is_thread_safe() {
         use std::sync::Arc;
         use std::thread;
-        
+
         let state = Arc::new(AiBrowserState::default());
         let state_clone = Arc::clone(&state);
-        
+
         let handle = thread::spawn(move || {
             assert!(!state_clone.is_browser_open());
         });
-        
+
         handle.join().unwrap();
         assert!(!state.is_browser_open());
     }
@@ -332,7 +365,7 @@ mod wry_browser_tests {
 
     #[test]
     fn test_all_tabs_iterator() {
-        let tabs: Vec<AiTab> = AiTab::all().iter().copied().collect();
+        let tabs: Vec<AiTab> = AiTab::all().to_vec();
         assert_eq!(tabs.len(), 4);
         assert!(tabs.contains(&AiTab::ChatGpt));
         assert!(tabs.contains(&AiTab::Antigravity));
@@ -358,20 +391,26 @@ mod wry_browser_tests {
     #[test]
     fn test_screenshot_path_with_special_characters() {
         let mut state = AiBrowserState::default();
-        
+
         let path_with_spaces = "C:\\Users\\Test User\\screenshot 123.png";
         state.set_screenshot_path(path_with_spaces.to_string());
-        assert_eq!(state.last_screenshot_path.as_deref(), Some(path_with_spaces));
-        
+        assert_eq!(
+            state.last_screenshot_path.as_deref(),
+            Some(path_with_spaces)
+        );
+
         let path_with_unicode = "C:\\temp\\screenshot_测试.png";
         state.set_screenshot_path(path_with_unicode.to_string());
-        assert_eq!(state.last_screenshot_path.as_deref(), Some(path_with_unicode));
+        assert_eq!(
+            state.last_screenshot_path.as_deref(),
+            Some(path_with_unicode)
+        );
     }
 
     #[test]
     fn test_multiple_tab_switches() {
         let mut state = AiBrowserState::default();
-        
+
         for _ in 0..10 {
             for &tab in AiTab::all() {
                 state.select_tab(tab);
@@ -383,7 +422,7 @@ mod wry_browser_tests {
     #[test]
     fn test_browser_state_default_values() {
         let state = AiBrowserState::default();
-        
+
         assert_eq!(state.active_tab, AiTab::ChatGpt);
         assert!(state.last_screenshot_path.is_none());
         assert!(!state.is_browser_open());
@@ -394,7 +433,11 @@ mod wry_browser_tests {
         let url1 = AiTab::ChatGpt.url();
         let url2 = AiTab::ChatGpt.url();
         assert_eq!(url1, url2);
-        assert_eq!(url1.as_ptr(), url2.as_ptr(), "URLs should be static strings");
+        assert_eq!(
+            url1.as_ptr(),
+            url2.as_ptr(),
+            "URLs should be static strings"
+        );
     }
 
     #[test]
@@ -402,7 +445,11 @@ mod wry_browser_tests {
         let label1 = AiTab::ChatGpt.label();
         let label2 = AiTab::ChatGpt.label();
         assert_eq!(label1, label2);
-        assert_eq!(label1.as_ptr(), label2.as_ptr(), "Labels should be static strings");
+        assert_eq!(
+            label1.as_ptr(),
+            label2.as_ptr(),
+            "Labels should be static strings"
+        );
     }
 
     #[test]
@@ -410,13 +457,17 @@ mod wry_browser_tests {
         let tabs1 = AiTab::all();
         let tabs2 = AiTab::all();
         assert_eq!(tabs1.len(), tabs2.len());
-        assert_eq!(tabs1.as_ptr(), tabs2.as_ptr(), "Should return same static slice");
+        assert_eq!(
+            tabs1.as_ptr(),
+            tabs2.as_ptr(),
+            "Should return same static slice"
+        );
     }
 
     #[test]
     fn test_screenshot_path_empty_string() {
         let mut state = AiBrowserState::default();
-        
+
         state.set_screenshot_path(String::new());
         assert!(state.last_screenshot_path.is_some());
         assert_eq!(state.last_screenshot_path.as_deref(), Some(""));
@@ -425,10 +476,14 @@ mod wry_browser_tests {
     #[test]
     fn test_screenshot_path_very_long() {
         let mut state = AiBrowserState::default();
-        
-        let long_path = "C:\\".to_string() + &"very_long_directory_name\\".repeat(50) + "screenshot.png";
+
+        let long_path =
+            "C:\\".to_string() + &"very_long_directory_name\\".repeat(50) + "screenshot.png";
         state.set_screenshot_path(long_path.clone());
-        assert_eq!(state.last_screenshot_path.as_deref(), Some(long_path.as_str()));
+        assert_eq!(
+            state.last_screenshot_path.as_deref(),
+            Some(long_path.as_str())
+        );
     }
 
     #[test]
@@ -436,7 +491,7 @@ mod wry_browser_tests {
         let state = AiBrowserState::default();
         let tab_copy = state.active_tab;
         let path_clone = state.last_screenshot_path.clone();
-        
+
         assert_eq!(tab_copy, AiTab::ChatGpt);
         assert_eq!(path_clone, None);
     }
@@ -444,12 +499,12 @@ mod wry_browser_tests {
     #[test]
     fn test_tab_pattern_matching() {
         let tab = AiTab::ChatGpt;
-        
+
         let result = match tab {
             AiTab::ChatGpt => "matched",
             _ => "not matched",
         };
-        
+
         assert_eq!(result, "matched");
     }
 
@@ -530,7 +585,7 @@ mod wry_integration_tests {
     fn test_browser_open_state_persistence() {
         let state = AiBrowserState::default();
         assert!(!state.is_browser_open());
-        
+
         thread::sleep(Duration::from_millis(10));
         assert!(!state.is_browser_open());
     }

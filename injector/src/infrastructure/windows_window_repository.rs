@@ -1,10 +1,9 @@
 use crate::application::WindowRepository;
-use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use crate::domain::{ProcessId, Window, WindowId};
 use anyhow::{Context, Result};
 use dll_syringe::{
     process::{BorrowedProcessModule, OwnedProcess, Process},
-    rpc::{RawRpcFunctionPtr, RemoteRawProcedure},
+    rpc::{RawRpcFnPtr, RemoteRawProcedure},
     Syringe,
 };
 use std::{env, path::PathBuf};
@@ -16,14 +15,14 @@ use windows::{
         Graphics::{
             Dwm::{DwmGetWindowAttribute, DWMWA_CLOAKED},
             Gdi::{
-                DeleteObject, GetDC, GetDIBits, GetObjectW, ReleaseDC, BI_RGB, BITMAP,
-                BITMAPINFO, BITMAPINFOHEADER, DIB_RGB_COLORS,
+                DeleteObject, GetDC, GetDIBits, GetObjectW, ReleaseDC, BITMAP, BITMAPINFO,
+                BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS,
             },
         },
         UI::WindowsAndMessaging::{
-            EnumWindows, GetClassLongPtrW, GetIconInfo, GetWindowDisplayAffinity,
-            GetWindowTextW, GetWindowThreadProcessId, IsWindowVisible, SendMessageW,
-            GCLP_HICONSM, HICON, ICONINFO, ICON_SMALL2, WM_GETICON,
+            EnumWindows, GetClassLongPtrW, GetIconInfo, GetWindowDisplayAffinity, GetWindowTextW,
+            GetWindowThreadProcessId, IsWindowVisible, SendMessageW, GCLP_HICONSM, HICON, ICONINFO,
+            ICON_SMALL2, WM_GETICON,
         },
     },
 };
@@ -48,7 +47,7 @@ impl WindowsWindowRepository {
         Ok(dll_path)
     }
 
-    fn get_remote_proc<F: RawRpcFunctionPtr>(
+    fn get_remote_proc<F: RawRpcFnPtr>(
         syringe: &Syringe,
         module: BorrowedProcessModule<'_>,
         proc_name: &str,
@@ -56,36 +55,9 @@ impl WindowsWindowRepository {
         unsafe { syringe.get_raw_procedure::<F>(module, proc_name) }?
             .context(format!("Failed to find procedure {}", proc_name))
     }
-
-    pub fn set_cursor_capture_hidden(&self, hidden: bool) -> Result<()> {
-        let our_pid = std::process::id();
-        let target_process = OwnedProcess::from_pid(our_pid)
-            .map_err(|e| anyhow::anyhow!("Failed to open own process: {:?}", e))?;
-
-        let dll_path = Self::get_dll_path(&target_process)?;
-        let syringe = Syringe::for_process(target_process);
-        let module = syringe.find_or_inject(&dll_path)
-            .map_err(|e| anyhow::anyhow!("Failed to inject: {:?}", e))?;
-
-        if hidden {
-            let proc = Self::get_remote_proc::<extern "system" fn() -> bool>(
-                &syringe, module, "HideCursorFromCapture"
-            )?;
-            proc.call().map_err(|e| anyhow::anyhow!("{:?}", e))?;
-        } else {
-            let proc = Self::get_remote_proc::<extern "system" fn() -> bool>(
-                &syringe, module, "RestoreCursor"
-            )?;
-            proc.call().map_err(|e| anyhow::anyhow!("{:?}", e))?;
-        }
-        Ok(())
-    }
 }
 
-
 impl WindowRepository for WindowsWindowRepository {
-
-    
     fn find_all(&self) -> Result<Vec<Window>> {
         let mut windows = Vec::new();
 
@@ -99,8 +71,8 @@ impl WindowRepository for WindowsWindowRepository {
 
     fn set_cursor_capture_hidden(&self, hidden: bool) -> Result<()> {
         use windows::Win32::UI::WindowsAndMessaging::{
-            CreateCursor, SetSystemCursor, SystemParametersInfoW,
-            SYSTEM_CURSOR_ID, SPI_SETCURSORS, SPIF_UPDATEINIFILE,
+            CreateCursor, SetSystemCursor, SystemParametersInfoW, SPIF_UPDATEINIFILE,
+            SPI_SETCURSORS, SYSTEM_CURSOR_ID,
         };
 
         // All standard system cursor IDs
@@ -127,7 +99,11 @@ impl WindowRepository for WindowsWindowRepository {
             if hidden {
                 for &id in CURSOR_IDS {
                     if let Ok(cursor) = CreateCursor(
-                        None, 0, 0, 32, 32,
+                        None,
+                        0,
+                        0,
+                        32,
+                        32,
                         AND_MASK.as_ptr() as *const _,
                         XOR_MASK.as_ptr() as *const _,
                     ) {
@@ -142,11 +118,10 @@ impl WindowRepository for WindowsWindowRepository {
         Ok(())
     }
 
-    
-
     fn get_icon(&self, window_id: &WindowId) -> Option<(usize, usize, Vec<u8>)> {
         let hwnd = HWND(window_id.value() as *mut _);
-        let lresult = unsafe { SendMessageW(hwnd, WM_GETICON, Some(WPARAM(ICON_SMALL2 as usize)), None) };
+        let lresult =
+            unsafe { SendMessageW(hwnd, WM_GETICON, Some(WPARAM(ICON_SMALL2 as usize)), None) };
 
         let hicon = if lresult.0 == 0 {
             let uresult = unsafe { GetClassLongPtrW(hwnd, GCLP_HICONSM) };
@@ -223,18 +198,18 @@ impl WindowRepository for WindowsWindowRepository {
     ) -> Result<()> {
         let target_process = OwnedProcess::from_pid(process_id.value())
             .map_err(|e| anyhow::anyhow!("Failed to open process {}: {:?}", process_id, e))?;
-        
+
         let dll_path = Self::get_dll_path(&target_process)
             .map_err(|e| anyhow::anyhow!("Failed to get DLL path: {:?}", e))?;
-        
+
         debug!("DLL path: {:?}", dll_path);
-        
+
         if !dll_path.exists() {
             return Err(anyhow::anyhow!("DLL not found at {:?}", dll_path));
         }
-        
+
         let syringe = Syringe::for_process(target_process);
-        
+
         let module = match syringe.find_or_inject(&dll_path) {
             Ok(m) => m,
             Err(e) => {
@@ -253,7 +228,8 @@ impl WindowRepository for WindowsWindowRepository {
             "SetWindowVisibility",
         )?;
 
-        visibility_proc.call(window_id.value(), hidden)
+        visibility_proc
+            .call(window_id.value(), hidden)
             .map_err(|e| anyhow::anyhow!("Failed to call SetWindowVisibility: {:?}", e))?;
 
         if let Some(hide_taskbar) = hide_from_taskbar {
@@ -262,7 +238,8 @@ impl WindowRepository for WindowsWindowRepository {
                 module,
                 "HideFromTaskbar",
             )?;
-            taskbar_proc.call(window_id.value(), hide_taskbar)
+            taskbar_proc
+                .call(window_id.value(), hide_taskbar)
                 .map_err(|e| anyhow::anyhow!("Failed to call HideFromTaskbar: {:?}", e))?;
         }
 
@@ -271,10 +248,10 @@ impl WindowRepository for WindowsWindowRepository {
 
     fn set_process_stealth(&self, process_id: &ProcessId) -> Result<()> {
         use windows::Win32::System::Diagnostics::ToolHelp::{
-            CreateToolhelp32Snapshot, Process32FirstW, Process32NextW,
-            PROCESSENTRY32W, TH32CS_SNAPPROCESS,
+            CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
+            TH32CS_SNAPPROCESS,
         };
-        
+
         let process_name = match process_id.value() {
             1 => "firefox.exe".to_string(),
             2 => "msedge.exe".to_string(),
@@ -285,143 +262,154 @@ impl WindowRepository for WindowsWindowRepository {
             pid => {
                 let _target_process = OwnedProcess::from_pid(pid)
                     .map_err(|e| anyhow::anyhow!("Failed to open target process: {:?}", e))?;
-                
+
                 let snapshot = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) }
                     .map_err(|e| anyhow::anyhow!("Failed to create snapshot: {:?}", e))?;
-                
+
                 let mut found_name = String::new();
                 let mut entry = PROCESSENTRY32W {
                     dwSize: std::mem::size_of::<PROCESSENTRY32W>() as u32,
                     ..Default::default()
                 };
-                
+
                 if unsafe { Process32FirstW(snapshot, &mut entry) }.is_ok() {
                     loop {
                         if entry.th32ProcessID == pid {
-                            let name_len = entry.szExeFile.iter()
+                            let name_len = entry
+                                .szExeFile
+                                .iter()
                                 .position(|&c| c == 0)
                                 .unwrap_or(entry.szExeFile.len());
                             found_name = String::from_utf16_lossy(&entry.szExeFile[..name_len]);
                             break;
                         }
-                        
+
                         if unsafe { Process32NextW(snapshot, &mut entry) }.is_err() {
                             break;
                         }
                     }
                 }
-                
+
                 if found_name.is_empty() {
-                    return Err(anyhow::anyhow!("Failed to get process name for PID {}", pid));
+                    return Err(anyhow::anyhow!(
+                        "Failed to get process name for PID {}",
+                        pid
+                    ));
                 }
-                
+
                 found_name
             }
         };
-        
+
         let snapshot = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) }
             .map_err(|e| anyhow::anyhow!("Failed to create process snapshot: {:?}", e))?;
-        
+
         let mut target_pids = Vec::new();
         let mut entry = PROCESSENTRY32W {
             dwSize: std::mem::size_of::<PROCESSENTRY32W>() as u32,
             ..Default::default()
         };
-        
+
         if unsafe { Process32FirstW(snapshot, &mut entry) }.is_ok() {
             loop {
-                let name_len = entry.szExeFile.iter()
+                let name_len = entry
+                    .szExeFile
+                    .iter()
                     .position(|&c| c == 0)
                     .unwrap_or(entry.szExeFile.len());
                 let name = String::from_utf16_lossy(&entry.szExeFile[..name_len]);
-                
+
                 if name.to_lowercase() == process_name.to_lowercase() {
                     target_pids.push(entry.th32ProcessID);
                 }
-                
+
                 if unsafe { Process32NextW(snapshot, &mut entry) }.is_err() {
                     break;
                 }
             }
         }
-        
+
         if target_pids.is_empty() {
             return Ok(());
         }
-        
+
         let all_windows = self.find_all()?;
         let mut hidden_count = 0;
-        
+
         for window in all_windows {
             if target_pids.contains(&window.process_id().value())
-                && self.set_visibility(
-                    window.process_id(),
-                    window.id(),
-                    false,
-                    Some(true),
-                ).is_ok() {
-                    hidden_count += 1;
-                }
+                && self
+                    .set_visibility(window.process_id(), window.id(), false, Some(true))
+                    .is_ok()
+            {
+                hidden_count += 1;
+            }
         }
-        
+
         debug!("Hidden {} window(s) for: {}", hidden_count, process_name);
         Ok(())
     }
 
     fn inject_hook_dll(&self, dll_name: &str) -> Result<()> {
         use windows::Win32::System::Diagnostics::ToolHelp::{
-            CreateToolhelp32Snapshot, Process32FirstW, Process32NextW,
-            PROCESSENTRY32W, TH32CS_SNAPPROCESS,
+            CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
+            TH32CS_SNAPPROCESS,
         };
-        
+
         let snapshot = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) }
             .map_err(|e| anyhow::anyhow!("Failed to create snapshot: {:?}", e))?;
-        
+
         let mut taskmgr_pid = 0u32;
         let mut entry = PROCESSENTRY32W {
             dwSize: std::mem::size_of::<PROCESSENTRY32W>() as u32,
             ..Default::default()
         };
-        
+
         if unsafe { Process32FirstW(snapshot, &mut entry) }.is_ok() {
             loop {
-                let name_len = entry.szExeFile.iter()
+                let name_len = entry
+                    .szExeFile
+                    .iter()
                     .position(|&c| c == 0)
                     .unwrap_or(entry.szExeFile.len());
                 let name = String::from_utf16_lossy(&entry.szExeFile[..name_len]);
-                
+
                 if name.to_lowercase() == "taskmgr.exe" {
                     taskmgr_pid = entry.th32ProcessID;
                     break;
                 }
-                
+
                 if unsafe { Process32NextW(snapshot, &mut entry) }.is_err() {
                     break;
                 }
             }
         }
-        
+
         if taskmgr_pid == 0 {
             return Err(anyhow::anyhow!("Task Manager not running"));
         }
-        
+
         let target_process = OwnedProcess::from_pid(taskmgr_pid)
             .map_err(|e| anyhow::anyhow!("Failed to open Task Manager: {:?}", e))?;
-        
+
         let mut dll_path = env::current_exe()?;
         dll_path.pop();
         dll_path.push(dll_name);
-        
+
         if !dll_path.exists() {
             return Err(anyhow::anyhow!("Hook DLL not found: {:?}", dll_path));
         }
-        
+
         let syringe = Syringe::for_process(target_process);
-        
-        syringe.inject(&dll_path)
-            .map_err(|e| anyhow::anyhow!("Failed to inject {} into Task Manager: {:?}", dll_name, e))?;
-        
-        debug!("Injected {} into Task Manager (PID: {})", dll_name, taskmgr_pid);
+
+        syringe.inject(&dll_path).map_err(|e| {
+            anyhow::anyhow!("Failed to inject {} into Task Manager: {:?}", dll_name, e)
+        })?;
+
+        debug!(
+            "Injected {} into Task Manager (PID: {})",
+            dll_name, taskmgr_pid
+        );
         Ok(())
     }
 }
@@ -466,42 +454,45 @@ unsafe extern "system" fn enum_windows_proc(hwnd: HWND, lparam: LPARAM) -> BOOL 
     }
 
     use windows::Win32::System::Diagnostics::ToolHelp::{
-        CreateToolhelp32Snapshot, Process32FirstW, Process32NextW,
-        PROCESSENTRY32W, TH32CS_SNAPPROCESS,
+        CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
+        TH32CS_SNAPPROCESS,
     };
-    
-    let process_name = if let Ok(snapshot) = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) } {
-        let mut entry = PROCESSENTRY32W {
-            dwSize: std::mem::size_of::<PROCESSENTRY32W>() as u32,
-            ..Default::default()
-        };
-        
-        let mut found_name = String::new();
-        if unsafe { Process32FirstW(snapshot, &mut entry) }.is_ok() {
-            loop {
-                if entry.th32ProcessID == pid {
-                    let name_len = entry.szExeFile.iter()
-                        .position(|&c| c == 0)
-                        .unwrap_or(entry.szExeFile.len());
-                    found_name = String::from_utf16_lossy(&entry.szExeFile[..name_len]);
-                    break;
-                }
-                
-                if unsafe { Process32NextW(snapshot, &mut entry) }.is_err() {
-                    break;
+
+    let process_name =
+        if let Ok(snapshot) = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) } {
+            let mut entry = PROCESSENTRY32W {
+                dwSize: std::mem::size_of::<PROCESSENTRY32W>() as u32,
+                ..Default::default()
+            };
+
+            let mut found_name = String::new();
+            if unsafe { Process32FirstW(snapshot, &mut entry) }.is_ok() {
+                loop {
+                    if entry.th32ProcessID == pid {
+                        let name_len = entry
+                            .szExeFile
+                            .iter()
+                            .position(|&c| c == 0)
+                            .unwrap_or(entry.szExeFile.len());
+                        found_name = String::from_utf16_lossy(&entry.szExeFile[..name_len]);
+                        break;
+                    }
+
+                    if unsafe { Process32NextW(snapshot, &mut entry) }.is_err() {
+                        break;
+                    }
                 }
             }
-        }
-        
-        if found_name.is_empty() {
-            pid.to_string()
+
+            if found_name.is_empty() {
+                pid.to_string()
+            } else {
+                found_name
+            }
         } else {
-            found_name
-        }
-    } else {
-        pid.to_string()
-    };
-    
+            pid.to_string()
+        };
+
     debug!("  -> PID={} process_name={}", pid, process_name);
 
     let windows: &mut Vec<Window> = unsafe { &mut *(lparam.0 as *mut _) };

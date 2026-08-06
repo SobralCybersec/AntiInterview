@@ -1,6 +1,5 @@
 # Rust
 target/
-Cargo.lock
 **/*.rs.bk
 *.pdb
 
@@ -11,20 +10,15 @@ Cargo.lock
 *.swo
 *~
 .amazonq/
-.github/
 .amazonq
-.github
 .gitingore
 .issues
+.codegraph/
 anti-interview-v1.0.0
 .vs/
-<<<<<<< HEAD
 RELEASE_NOTES_V1.1.0.md
-
 RELEASE_NOTES_PT_V1.1.0.md
-=======
 CLAUDE.md
->>>>>>> 1510699 (Linux Support)
 
 # OS
 .DS_Store

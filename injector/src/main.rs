@@ -7,14 +7,14 @@ mod presentation;
 
 use application::WindowService;
 use infrastructure::FileConfigurationRepository;
-#[cfg(windows)]
-use infrastructure::WindowsWindowRepository;
 #[cfg(target_os = "linux")]
 use infrastructure::LinuxWindowRepository;
+#[cfg(windows)]
+use infrastructure::WindowsWindowRepository;
 use presentation::AppState;
+use std::fs::OpenOptions;
 use std::sync::Arc;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
-use std::fs::OpenOptions;
 
 fn main() {
     let log_file = OpenOptions::new()
@@ -23,20 +23,15 @@ fn main() {
         .open("anti-interview.log")
         .expect("Failed to create log file");
 
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("info"));
+    let env_filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
 
     if cfg!(debug_assertions) {
         tracing_subscriber::registry()
-            .with(
-                fmt::layer()
-                    .with_writer(std::io::stdout)
-                    .with_ansi(true)
-            )
+            .with(fmt::layer().with_writer(std::io::stdout).with_ansi(true))
             .with(
                 fmt::layer()
                     .with_writer(Arc::new(log_file))
-                    .with_ansi(false)
+                    .with_ansi(false),
             )
             .with(env_filter)
             .init();
@@ -45,7 +40,7 @@ fn main() {
             .with(
                 fmt::layer()
                     .with_writer(Arc::new(log_file))
-                    .with_ansi(false)
+                    .with_ansi(false),
             )
             .with(env_filter)
             .init();

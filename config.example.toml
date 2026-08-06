@@ -1,5 +1,6 @@
-# InvisWind Configuration File
-# This file is automatically created in: %APPDATA%\InvisWind\config.toml
+# Anti-Interview configuration
+# Created under the operating system user configuration directory:
+# AntiInterview/config.toml
 
 [hotkeys]
 # Hotkey for taking screenshots
@@ -10,6 +11,18 @@ hide_window = "Ctrl+Shift+H"
 
 # Hotkey for showing the GUI
 show_gui = "Ctrl+Shift+I"
+
+# Hotkey for a silent screenshot
+silent_screenshot = "Ctrl+Shift+P"
+
+# Hotkey for refreshing the window list
+refresh_windows = "Ctrl+Shift+R"
+
+# Hotkey for toggling the live preview
+toggle_preview = "Ctrl+Shift+V"
+
+# Hotkey for opening the AI browser
+open_ai_browser = "Ctrl+Shift+A"
 
 [ui]
 # Use dark theme (true/false)
@@ -24,17 +37,42 @@ hide_from_taskbar = false
 # Ignore mouse input on hidden windows (click-through) (true/false)
 ignore_mouse = false
 
-# Banner URL (optional) - can be local file:// or remote https://
-banner_url = "https://i.imgur.com/kxx8y9P.gif"
+# Enable the experimental Task Manager hiding path
+hide_from_task_manager = false
+
+# Window IDs remembered as hidden
+hidden_windows = []
+
+# Common applications hidden by the quick settings
+browser_firefox_hidden = false
+browser_edge_hidden = false
+browser_chrome_hidden = false
+ide_vscode_hidden = false
+ide_vs_hidden = false
+
+# Optional Task Manager hook DLLs
+hook_notepad = false
+hook_firefox = false
+hook_edge = false
+hook_chrome = false
+hook_vscode = false
+hook_visualstudio = false
+hook_antiinterview = false
+
+# Copy silent screenshots to the system clipboard
+auto_paste_screenshot = false
+
+# Hide the integrated AI browser from capture after opening
+auto_hide_ai_browser = true
+
+# Hide the cursor from capture where supported
+hide_cursor = false
+
+# Optional banner. Uncomment one local file:// or trusted https:// URL.
+# banner_url = "https://example.com/banner.gif"
 
 # Window size [width, height]
 window_size = [320.0, 540.0]
-
-# Renderer: "auto", "glow" (OpenGL), "wgpu" (Vulkan/DX12)
-# auto = automatically selects best renderer
-# glow = OpenGL (better compatibility, recommended for Windows)
-# wgpu = Vulkan/DX12 (modern, better for new hardware)
-renderer = "auto"
 
 [behavior]
 # Automatically refresh window list when GUI gains focus (true/false)

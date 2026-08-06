@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  security:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Audit Cargo.lock
+        uses: rustsec/audit-check@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  test:
+    name: Test (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly-2026-08-04
+          components: clippy, rustfmt
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Check C++ formatting
+        if: runner.os == 'Linux'
+        run: clang-format --dry-run --Werror hook/*.cpp hook/*.h
+
+      - name: Run cargo check
+        run: cargo check --workspace --all-targets
+
+      - name: Run tests
+        run: cargo test --workspace --verbose -- --nocapture
+      
+      - name: Run clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+  build:
+    name: Build
+    runs-on: windows-latest
+    needs: [security, test]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly-2026-08-04
+      
+      - name: Build release
+        run: cargo build --release --verbose
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: anti-interview-windows
+          path: target/release/anti-interview.exe

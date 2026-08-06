@@ -1,13 +1,13 @@
 use crate::application::{ConfigurationRepository, WindowService};
 use crate::domain::{Configuration, ProcessId, Window, WindowId};
-use crate::infrastructure::{CaptureManager, TrayEvent, TrayManager, ProcessMonitor};
+use crate::infrastructure::Monitor;
+use crate::infrastructure::{CaptureManager, ProcessMonitor, TrayEvent, TrayManager};
 use anyhow::Result;
 use crossbeam_channel::{Receiver, Sender};
 use eframe::egui::{ColorImage, Context, TextureHandle};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tracing::{debug, error, info};
-use crate::infrastructure::Monitor;
 
 pub enum AppCommand {
     RefreshWindows,
@@ -43,7 +43,9 @@ pub struct AppState {
 
 impl AppState {
     pub fn set_process_stealth(&self, process_id: ProcessId) {
-        let _ = self.command_tx.send(AppCommand::SetProcessStealth { process_id });
+        let _ = self
+            .command_tx
+            .send(AppCommand::SetProcessStealth { process_id });
     }
     pub fn new(
         window_service: Arc<WindowService>,
@@ -69,31 +71,8 @@ impl AppState {
         };
 
         let process_monitor = ProcessMonitor::new(window_service.clone());
-        
-        let mut enabled_hooks = Vec::new();
-        if config.ui.hook_notepad {
-            enabled_hooks.push("hook_notepad.dll".to_string());
-        }
-        if config.ui.hook_firefox {
-            enabled_hooks.push("hook_firefox.dll".to_string());
-        }
-        if config.ui.hook_edge {
-            enabled_hooks.push("hook_edge.dll".to_string());
-        }
-        if config.ui.hook_chrome {
-            enabled_hooks.push("hook_chrome.dll".to_string());
-        }
-        if config.ui.hook_vscode {
-            enabled_hooks.push("hook_vscode.dll".to_string());
-        }
-        if config.ui.hook_visualstudio {
-            enabled_hooks.push("hook_visualstudio.dll".to_string());
-        }
-        if config.ui.hook_antiinterview {
-            enabled_hooks.push("hook_antiinterview.dll".to_string());
-        }
-        
-        process_monitor.update_enabled_hooks(enabled_hooks);
+
+        process_monitor.update_enabled_hooks(config.ui.enabled_hooks());
         process_monitor.start();
 
         let state = Self {
@@ -114,9 +93,9 @@ impl AppState {
             window_visible: true,
             last_screenshot_path: None,
         };
-        
+
         state.refresh_windows();
-        
+
         Ok(state)
     }
 
@@ -137,11 +116,12 @@ impl AppState {
                                     .iter()
                                     .map(|w| (w.id().value(), w.is_hidden()))
                                     .collect();
-                                
+
                                 *windows_lock = new_windows;
-                                
+
                                 for window in windows_lock.iter_mut() {
-                                    if let Some(&was_hidden) = old_hidden.get(&window.id().value()) {
+                                    if let Some(&was_hidden) = old_hidden.get(&window.id().value())
+                                    {
                                         window.set_hidden(was_hidden);
                                     }
                                 }
@@ -152,7 +132,7 @@ impl AppState {
                     }
                     AppCommand::SetProcessStealth { process_id } => {
                         info!("Setting process stealth for PID: {}", process_id);
-                        
+
                         if let Err(e) = window_service.set_process_stealth(&process_id) {
                             error!("Failed to set process stealth: {:?}", e);
                         }
@@ -188,34 +168,12 @@ impl AppState {
 
     pub fn save_config(&self) -> Result<()> {
         let result = self.config_repo.save(&self.config);
-        
+
         if result.is_ok() {
-            let mut enabled_hooks = Vec::new();
-            if self.config.ui.hook_notepad {
-                enabled_hooks.push("hook_notepad.dll".to_string());
-            }
-            if self.config.ui.hook_firefox {
-                enabled_hooks.push("hook_firefox.dll".to_string());
-            }
-            if self.config.ui.hook_edge {
-                enabled_hooks.push("hook_edge.dll".to_string());
-            }
-            if self.config.ui.hook_chrome {
-                enabled_hooks.push("hook_chrome.dll".to_string());
-            }
-            if self.config.ui.hook_vscode {
-                enabled_hooks.push("hook_vscode.dll".to_string());
-            }
-            if self.config.ui.hook_visualstudio {
-                enabled_hooks.push("hook_visualstudio.dll".to_string());
-            }
-            if self.config.ui.hook_antiinterview {
-                enabled_hooks.push("hook_antiinterview.dll".to_string());
-            }
-            
-            self.process_monitor.update_enabled_hooks(enabled_hooks);
+            self.process_monitor
+                .update_enabled_hooks(self.config.ui.enabled_hooks());
         }
-        
+
         result
     }
 
@@ -240,13 +198,13 @@ impl AppState {
 
     pub fn get_windows(&self) -> Vec<Window> {
         let mut windows = self.windows.lock().unwrap().clone();
-        
+
         for window in windows.iter_mut() {
             if self.config.ui.hidden_windows.contains(&window.id().value()) {
                 window.set_hidden(true);
             }
         }
-        
+
         windows
     }
 
@@ -260,7 +218,7 @@ impl AppState {
         {
             window.set_hidden(hidden);
         }
-        
+
         if hidden {
             self.config.ui.hidden_windows.insert(window_id.value());
         } else {
@@ -278,19 +236,25 @@ impl AppState {
     }
 
     pub fn get_filtered_windows(&self) -> Vec<Window> {
-        let windows = self.get_windows();
-        self.window_service
-            .filter_windows(&windows, &self.filter_text)
+        let mut windows = self.get_windows();
+        if !self.filter_text.is_empty() {
+            let filter = self.filter_text.to_lowercase();
+            windows.retain(|window| window.matches_lowercase_filter(&filter));
+        }
+        windows
     }
 
     pub fn get_icon(&mut self, ctx: &Context, window_id: &WindowId) -> Option<&TextureHandle> {
         let id_value = window_id.value();
 
         if !self.icon_cache.contains_key(&id_value) {
-            let icon = self.window_service.get_icon(window_id).map(|(w, h, pixels)| {
-                let image = ColorImage::from_rgba_unmultiplied([w, h], &pixels);
-                ctx.load_texture("icon", image, eframe::egui::TextureOptions::LINEAR)
-            });
+            let icon = self
+                .window_service
+                .get_icon(window_id)
+                .map(|(w, h, pixels)| {
+                    let image = ColorImage::from_rgba_unmultiplied([w, h], &pixels);
+                    ctx.load_texture("icon", image, eframe::egui::TextureOptions::LINEAR)
+                });
             self.icon_cache.insert(id_value, icon);
         }
 
@@ -341,7 +305,8 @@ impl AppState {
 
     pub fn start_capture(&self) {
         if !self.monitors.is_empty() {
-            self.capture_manager.start_capture(self.monitors[self.active_monitor]);
+            self.capture_manager
+                .start_capture(self.monitors[self.active_monitor]);
         }
     }
 
@@ -372,71 +337,46 @@ impl AppState {
         let windows = self.get_windows();
         let pattern_lower = title_pattern.to_lowercase();
         let mut hidden_count = 0;
-        
+
         info!("Attempting to hide windows with pattern: {}", title_pattern);
-        
+
         for window in &windows {
             let window_title = window.title().to_lowercase();
             let window_process = window.process_name().to_lowercase();
-            
+
             // Match by title OR process name
             if window_title.contains(&pattern_lower) || window_process.contains(&pattern_lower) {
-                
-                info!("  Hiding: title='{}' process='{}' pid={}", 
-                      window.title(), window.process_name(), window.process_id());
-                
-                let hide_taskbar = if self.config.ui.hide_from_taskbar { Some(true) } else { None };
-                
+                debug!(
+                    "  Hiding: title='{}' process='{}' pid={}",
+                    window.title(),
+                    window.process_name(),
+                    window.process_id()
+                );
+
+                let hide_taskbar = if self.config.ui.hide_from_taskbar {
+                    Some(true)
+                } else {
+                    None
+                };
+
                 let _ = self.command_tx.send(AppCommand::ToggleVisibility {
                     process_id: window.process_id().clone(),
                     window_id: window.id().clone(),
                     hidden: true,
                     hide_from_taskbar: hide_taskbar,
                 });
-                
+
                 hidden_count += 1;
             }
         }
-        
+
         if hidden_count > 0 {
-            info!("Hidden {} window(s) with pattern: {}", hidden_count, title_pattern);
+            info!(
+                "Hidden {} window(s) with pattern: {}",
+                hidden_count, title_pattern
+            );
         } else {
             info!("No windows found with pattern: {}", title_pattern);
-        }
-    }
-    
-    pub fn show_browser_windows(&self, title_pattern: &str) {
-        let windows = self.get_windows();
-        let pattern_lower = title_pattern.to_lowercase();
-        let mut shown_count = 0;
-        
-        info!("Attempting to show windows with title containing: {}", title_pattern);
-        
-        for window in &windows {
-            let window_title = window.title().to_lowercase();
-            let window_process = window.process_name().to_lowercase();
-            
-            // Match by title OR process name
-            if window_title.contains(&pattern_lower) || window_process.contains(&pattern_lower) {
-                
-                info!("  Showing: title='{}' process='{}' pid={}", 
-                      window.title(), window.process_name(), window.process_id());
-                
-                let _ = self.command_tx.send(AppCommand::ToggleVisibility {
-                    process_id: window.process_id().clone(),
-                    window_id: window.id().clone(),
-                    hidden: false,
-                    hide_from_taskbar: Some(false),
-                });
-                
-                shown_count += 1;
-            }
-        }
-        
-        if shown_count > 0 {
-            info!("Shown {} window(s) with title containing: {}", shown_count, title_pattern);
-        } else {
-            info!("No windows found with title containing: {}", title_pattern);
         }
     }
 
@@ -471,11 +411,11 @@ impl AppState {
 
                 dyn_img.save(&path)?;
                 self.last_screenshot_path = Some(path_str.clone());
-                tracing::info!("Silent screenshot saved: {}", path_str);
-                
+                tracing::debug!("Silent screenshot saved: {}", path_str);
+
                 if self.config.ui.auto_paste_screenshot {
                     use arboard::{Clipboard, ImageData};
-                    
+
                     match Clipboard::new() {
                         Ok(mut clipboard) => {
                             let img_data = ImageData {
@@ -483,7 +423,7 @@ impl AppState {
                                 height: height as usize,
                                 bytes: raw.into(),
                             };
-                            
+
                             if let Err(e) = clipboard.set_image(img_data) {
                                 tracing::error!("Failed to copy image to clipboard: {:?}", e);
                             } else {
@@ -493,7 +433,7 @@ impl AppState {
                         Err(e) => tracing::error!("Failed to create clipboard: {:?}", e),
                     }
                 }
-                
+
                 return Ok(path_str);
             }
             std::thread::sleep(std::time::Duration::from_millis(50));
@@ -506,5 +446,3 @@ impl AppState {
         self.window_service.inject_hook_dll(dll_name)
     }
 }
-
-

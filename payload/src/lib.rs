@@ -1,14 +1,15 @@
+#![cfg(windows)]
+
 use std::os::windows::process::CommandExt;
 use std::process::Command;
 use windows::Win32::{
     Foundation::{COLORREF, HWND, RECT},
     UI::WindowsAndMessaging::{
-           CreateCursor, SetSystemCursor, SystemParametersInfoW,
-    SYSTEM_CURSOR_ID, SPI_SETCURSORS, SPIF_UPDATEINIFILE,
-        FlashWindow, GetWindowLongW, GetWindowRect, SetLayeredWindowAttributes,
-        SetWindowDisplayAffinity, SetWindowLongW, SetWindowPos, ShowCursor, ShowWindow,
-        GWL_EXSTYLE, HWND_NOTOPMOST, HWND_TOPMOST, LWA_ALPHA, SWP_FRAMECHANGED, SWP_NOMOVE,
-        SWP_NOSIZE, SW_MAXIMIZE, SW_MINIMIZE, SW_RESTORE, WDA_EXCLUDEFROMCAPTURE, WDA_NONE,
+        CreateCursor, FlashWindow, GetWindowLongW, GetWindowRect, SetLayeredWindowAttributes,
+        SetSystemCursor, SetWindowDisplayAffinity, SetWindowLongW, SetWindowPos, ShowCursor,
+        ShowWindow, SystemParametersInfoW, GWL_EXSTYLE, HWND_NOTOPMOST, HWND_TOPMOST, LWA_ALPHA,
+        SPIF_UPDATEINIFILE, SPI_SETCURSORS, SWP_FRAMECHANGED, SWP_NOMOVE, SWP_NOSIZE, SW_MAXIMIZE,
+        SW_MINIMIZE, SW_RESTORE, SYSTEM_CURSOR_ID, WDA_EXCLUDEFROMCAPTURE, WDA_NONE,
         WS_EX_APPWINDOW, WS_EX_LAYERED, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT,
     },
 };
@@ -19,7 +20,7 @@ const DETACHED_PROCESS: u32 = 0x00000008;
 static mut HIDDEN_PROCESS_NAME: Option<String> = None;
 
 /// # Safety
-/// 
+///
 /// This function is unsafe because it dereferences a raw pointer.
 /// The caller must ensure that `process_name` points to a valid null-terminated UTF-16 string.
 #[unsafe(no_mangle)]
@@ -38,7 +39,7 @@ pub unsafe extern "system" fn SetHiddenProcessName(process_name: *const u16) -> 
 }
 
 /// # Safety
-/// 
+///
 /// This function is unsafe because it dereferences a raw pointer.
 /// The caller must ensure that `buffer` points to a valid buffer with at least `buffer_size` elements.
 #[unsafe(no_mangle)]
@@ -59,7 +60,11 @@ pub unsafe extern "system" fn GetHiddenProcessName(buffer: *mut u16, buffer_size
 pub extern "system" fn HideCursorFromCapture() -> bool {
     unsafe {
         let cursor = match CreateCursor(
-            None, 0, 0, 32, 32,
+            None,
+            0,
+            0,
+            32,
+            32,
             AND_MASK.as_ptr() as *const _,
             XOR_MASK.as_ptr() as *const _,
         ) {
@@ -72,21 +77,14 @@ pub extern "system" fn HideCursorFromCapture() -> bool {
 
 #[no_mangle]
 pub extern "system" fn RestoreCursor() -> bool {
-    unsafe {
-        SystemParametersInfoW(
-            SPI_SETCURSORS, 
-            0, 
-            None, 
-            SPIF_UPDATEINIFILE
-        ).is_ok()
-    }
+    unsafe { SystemParametersInfoW(SPI_SETCURSORS, 0, None, SPIF_UPDATEINIFILE).is_ok() }
 }
 
 static AND_MASK: [u8; 128] = [0xFF; 128]; // fully transparent
 static XOR_MASK: [u8; 128] = [0x00; 128];
 
 /// # Safety
-/// 
+///
 /// This function is unsafe because it dereferences a raw pointer.
 /// The caller must ensure that `exe_path` points to a valid null-terminated UTF-16 string.
 #[unsafe(no_mangle)]
@@ -172,7 +170,16 @@ pub extern "system" fn IgnoreMouse(hwnd: HWND, ignore: bool) -> bool {
 
     unsafe {
         SetWindowLongW(hwnd, GWL_EXSTYLE, style);
-        SetWindowPos(hwnd, None, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED).is_ok()
+        SetWindowPos(
+            hwnd,
+            None,
+            0,
+            0,
+            0,
+            0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED,
+        )
+        .is_ok()
     }
 }
 
@@ -227,7 +234,7 @@ pub extern "system" fn SetWindowPosition(hwnd: HWND, x: i32, y: i32) -> bool {
 }
 
 /// # Safety
-/// 
+///
 /// This function is unsafe because it dereferences a raw pointer.
 /// The caller must ensure that `rect` points to a valid RECT structure.
 #[unsafe(no_mangle)]
@@ -255,4 +262,3 @@ pub extern "system" fn HideCursor(hide: bool) -> bool {
     }
     true
 }
-

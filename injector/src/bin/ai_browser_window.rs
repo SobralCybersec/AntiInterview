@@ -1,25 +1,29 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::env;
 use tao::{
     event::{Event, WindowEvent},
-    event_loop::{ControlFlow, EventLoopBuilder},
+    event_loop::ControlFlow,
     window::WindowBuilder,
 };
 use wry::WebViewBuilder;
-use std::env;
 
+#[cfg(not(target_os = "windows"))]
+use tao::event_loop::EventLoop;
+#[cfg(target_os = "windows")]
+use tao::event_loop::EventLoopBuilder;
 #[cfg(target_os = "windows")]
 use tao::platform::windows::EventLoopBuilderExtWindows;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    
+
     let url = if args.len() > 1 {
         args[1].clone()
     } else {
         "https://chatgpt.com".to_string()
     };
-    
+
     let title = if args.len() > 2 {
         args[2].clone()
     } else {
@@ -27,10 +31,8 @@ fn main() {
     };
 
     #[cfg(target_os = "windows")]
-    let event_loop = EventLoopBuilder::new()
-        .with_any_thread(true)
-        .build();
-    
+    let event_loop = EventLoopBuilder::new().with_any_thread(true).build();
+
     #[cfg(not(target_os = "windows"))]
     let event_loop = EventLoop::new();
 

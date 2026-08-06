@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod integration_tests {
-    use crate::application::{ConfigurationRepository, WindowService};
+    use crate::application::WindowService;
     use crate::infrastructure::{FileConfigurationRepository, WindowsWindowRepository};
     use crate::presentation::AppState;
     use std::sync::Arc;
@@ -21,7 +21,8 @@ mod integration_tests {
         let window_service = Arc::new(WindowService::new(window_repo));
         let config_repo = Arc::new(FileConfigurationRepository::new());
 
-        let mut state = AppState::new(window_service, config_repo).expect("Failed to create AppState");
+        let mut state =
+            AppState::new(window_service, config_repo).expect("Failed to create AppState");
 
         state.config_mut().ui.dark_theme = false;
         let result = state.save_config();

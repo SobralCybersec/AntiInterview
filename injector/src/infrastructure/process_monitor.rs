@@ -43,7 +43,7 @@ impl ProcessMonitor {
 
         std::thread::spawn(move || {
             info!("Process monitor started");
-            
+
             loop {
                 if !*running.lock().unwrap() {
                     break;
@@ -53,7 +53,7 @@ impl ProcessMonitor {
 
                 if let Some(current_pid) = Self::find_taskmgr_pid() {
                     let mut last_pid = last_taskmgr_pid.lock().unwrap();
-                    
+
                     if *last_pid != Some(current_pid) {
                         info!("New Task Manager detected (PID: {})", current_pid);
                         *last_pid = Some(current_pid);
@@ -104,7 +104,7 @@ impl ProcessMonitor {
                         .unwrap_or(entry.szExeFile.len());
                     let name = String::from_utf16_lossy(&entry.szExeFile[..name_len]);
 
-                    if name.to_lowercase() == "taskmgr.exe" {
+                    if name.eq_ignore_ascii_case("taskmgr.exe") {
                         return Some(entry.th32ProcessID);
                     }
 

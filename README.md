@@ -29,13 +29,11 @@ Controle a visibilidade de janelas durante sessões de compartilhamento de tela 
 </h1>
 
 * **Ocultação de Janelas**: Oculte janelas específicas das APIs de captura de tela
-* **Ocultar Cursor**: Cursor invisível via winit `set_cursor_visible` — toggleável nas configurações
+* **Ocultar Cursor (Experimental)**: Substitui os cursores do sistema no Windows enquanto ativo e os restaura ao desativar
 * **Navegador AI Integrado**: Acesse ChatGPT, Claude, Gemini e Antigravity sem abrir navegador externo
 * **Screenshot Silencioso**: Capture e copie para área de transferência com Ctrl+Shift+P
 * **Auto-Ocultar Navegador AI**: Oculta automaticamente janelas do navegador integrado
 * **Ocultação do Task Manager**: Injete hooks para ocultar processos do Gerenciador de Tarefas
-=======
-* **Ocultação de Janelas**: Controle a visibilidade de janelas durante sessões de compartilhamento de tela com integração em nível de sistema, com foco em privacidade e proteção de dados sensíveis (LGPD).
 * **Manipulação de Processos (Experimental)**: Técnicas avançadas de interação com processos do sistema para fins de pesquisa e estudo de comportamento do Windows
 * **Bandeja do Sistema**: Minimize para a bandeja com ícone nativo
 * **Visualização ao Vivo**: Preview em tempo real com captura de tela
@@ -45,9 +43,6 @@ Controle a visibilidade de janelas durante sessões de compartilhamento de tela 
 * **Multi-Monitor**: Suporte completo para múltiplos monitores
 * **Payloads Avançados**: 12 funções de manipulação de janelas
 * **Hooks Especializados**: 7 DLLs de hook para processos específicos
-=======
-* **Técnicas Avançadas**: 12 funções de manipulação de janelas
-* **Hooks Especializados**: 6 DLLs de hook para processos específicos
 * **Arquitetura DDD**: Código limpo, manutenível e pronto para produção
 * **Abstrações Zero-Cost**: Implementação Rust de alta performance
 * **Auto-Atualização**: Atualização automática da lista de janelas
@@ -62,7 +57,7 @@ Controle a visibilidade de janelas durante sessões de compartilhamento de tela 
   <img src="https://go-skill-icons.vercel.app/api/icons?i=rust,windows&size=64" />
 </p>
 
-* Rust 1.70+
+* Rust nightly-2026-08-04
 * Windows API (Win32)
 * Integração de baixo nível com processos Windows
 * Microsoft Detours (API Hooking)
@@ -138,6 +133,15 @@ Este projeto é destinado exclusivamente para fins de:
 
 O uso indevido é de total responsabilidade do usuário.
 
+## Documentação do Projeto
+
+- [Arquitetura](docs/ARCHITECTURE.md)
+- [Política de dependências](docs/DEPENDENCIES.md)
+- [Segurança](SECURITY.md)
+- [Privacidade](PRIVACY.md)
+- [Como contribuir](CONTRIBUTING.md)
+- [Licença MIT](LICENSE)
+
 ---
 <h1 align="center">
   <img src="https://i.imgur.com/PFZmPWb.gif" width="30" />
@@ -182,11 +186,8 @@ O uso indevido é de total responsabilidade do usuário.
 
 #### Comportamento de Janelas
 - **Ignorar Mouse**: Janelas ocultas ficam transparentes ao clique
-<<<<<<< HEAD
-- **Ocultar Cursor**: Torna o cursor invisível via winit — toggleável, sem afetar outras janelas
+- **Ocultar Cursor (Experimental)**: Altera os cursores do sistema e pode afetar outras aplicações enquanto estiver ativo; desative para restaurá-los
 - **Ocultar do Task Manager**: Recomendo desativo, em beta, utilize os hooks que é melhor.
-=======
->>>>>>> 1e9070871c62c28b66e7eabdc169b38947d8c157
 
 #### Ocultar Aplicações Comuns
 Oculte rapidamente navegadores e IDEs:
@@ -212,7 +213,7 @@ Funções experimentais para testar manipulação de janelas:
 - **Sempre no Topo**: Mantém janela acima de outras
 - **Piscar na Barra**: Chama atenção na barra de tarefas
 - **Opacidade**: Ajusta transparência (0-255)
-- **Ocultar Cursor**: Esconde o cursor do mouse (experimental)
+- **Ocultar Cursor**: Substitui temporariamente os cursores do sistema (experimental)
 
 ### Atalhos
 
@@ -275,7 +276,7 @@ Funções experimentais para testar manipulação de janelas:
 * [x] Screenshot silencioso com cópia para área de transferência
 * [x] Auto-ocultar navegador AI
 * [x] 7 atalhos configuráveis
-* [x] Ocultar Cursor via winit set_cursor_visible (toggleável)
+* [x] Ocultar Cursor por substituição temporária dos cursores do sistema (toggleável)
 * [ ] UI de customização de atalhos
 * [ ] Perfis de janelas
 * [ ] Regras de auto-ocultação

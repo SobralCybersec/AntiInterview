@@ -4,12 +4,8 @@ pub mod gui;
 pub mod video;
 
 #[cfg(test)]
-<<<<<<< HEAD
 mod ai_browser_tests;
-#[cfg(test)]
-=======
-#[cfg(windows)]
->>>>>>> 1510699 (Linux Support)
+#[cfg(all(test, windows))]
 mod app_state_tests;
 #[cfg(test)]
 mod clipboard_tests;

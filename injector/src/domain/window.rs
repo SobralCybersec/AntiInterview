@@ -25,7 +25,6 @@ impl ProcessId {
     pub fn value(&self) -> u32 {
         self.0
     }
-
 }
 
 impl fmt::Display for ProcessId {
@@ -33,7 +32,6 @@ impl fmt::Display for ProcessId {
         write!(f, "{}", self.0)
     }
 }
-
 
 #[derive(Debug, Clone)]
 pub struct Window {
@@ -45,7 +43,13 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(id: WindowId, title: String, process_id: ProcessId, process_name: String, hidden: bool) -> Self {
+    pub fn new(
+        id: WindowId,
+        title: String,
+        process_id: ProcessId,
+        process_name: String,
+        hidden: bool,
+    ) -> Self {
         Self {
             id,
             title,
@@ -79,13 +83,12 @@ impl Window {
         self.hidden = hidden;
     }
 
-    pub fn matches_filter(&self, filter: &str) -> bool {
+    pub(crate) fn matches_lowercase_filter(&self, filter: &str) -> bool {
         if filter.is_empty() {
             return true;
         }
-        let filter_lower = filter.to_lowercase();
-        self.title.to_lowercase().contains(&filter_lower) ||
-        self.process_name.to_lowercase().contains(&filter_lower)
+        self.title.to_lowercase().contains(filter)
+            || self.process_name.to_lowercase().contains(filter)
     }
 }
 
@@ -144,7 +147,7 @@ mod tests {
             "chrome.exe".to_string(),
             false,
         );
-        assert!(window.matches_filter(""));
+        assert!(window.matches_lowercase_filter(""));
     }
 
     #[test]
@@ -156,9 +159,9 @@ mod tests {
             "chrome.exe".to_string(),
             false,
         );
-        assert!(window.matches_filter("chrome"));
-        assert!(window.matches_filter("CHROME"));
-        assert!(window.matches_filter("browser"));
+        for filter in ["chrome", "CHROME", "browser"] {
+            assert!(window.matches_lowercase_filter(&filter.to_lowercase()));
+        }
     }
 
     #[test]
@@ -170,7 +173,7 @@ mod tests {
             "chrome.exe".to_string(),
             false,
         );
-        assert!(!window.matches_filter("firefox"));
+        assert!(!window.matches_lowercase_filter("firefox"));
     }
 
     #[test]

@@ -3,6 +3,9 @@
 #define MyAppPublisher "Matheus & Pyetrah"
 #define MyAppURL "https://github.com/SobralCybersec/AntiInterview"
 #define MyAppExeName "anti-interview.exe"
+#ifndef MyHookDir
+#define MyHookDir "hook\out\build\x64-Debug"
+#endif
 
 [Setup]
 AppId={{8F9A2B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C}
@@ -39,13 +42,13 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Source: "target\release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "target\release\ai_browser_window.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "target\release\utils.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "hook\out\build\x64-Debug\hook_notepad.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "hook\out\build\x64-Debug\hook_firefox.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "hook\out\build\x64-Debug\hook_edge.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "hook\out\build\x64-Debug\hook_chrome.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "hook\out\build\x64-Debug\hook_vscode.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "hook\out\build\x64-Debug\hook_visualstudio.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "hook\out\build\x64-Debug\hook_antiinterview.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyHookDir}\hook_notepad.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyHookDir}\hook_firefox.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyHookDir}\hook_edge.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyHookDir}\hook_chrome.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyHookDir}\hook_vscode.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyHookDir}\hook_visualstudio.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyHookDir}\hook_antiinterview.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "RELEASE_NOTES.md"; DestDir: "{app}"; Flags: ignoreversion

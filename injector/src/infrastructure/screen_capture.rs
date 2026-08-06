@@ -13,6 +13,7 @@ use windows_capture::{
 
 pub struct ScreenCaptureService {
     capture_send: Sender<ColorImage>,
+    no_pad_buffer: Vec<u8>,
 }
 
 impl GraphicsCaptureApiHandler for ScreenCaptureService {
@@ -22,6 +23,7 @@ impl GraphicsCaptureApiHandler for ScreenCaptureService {
     fn new(ctx: Context<Self::Flags>) -> Result<Self> {
         Ok(Self {
             capture_send: ctx.flags,
+            no_pad_buffer: Vec::new(),
         })
     }
 
@@ -38,8 +40,7 @@ impl GraphicsCaptureApiHandler for ScreenCaptureService {
         let height = frame.height();
 
         if let Ok(buffer) = frame.buffer() {
-            let mut no_pad_buffer = Vec::new();
-            let no_pad_buffer = buffer.as_nopadding_buffer(&mut no_pad_buffer);
+            let no_pad_buffer = buffer.as_nopadding_buffer(&mut self.no_pad_buffer);
             let img = ColorImage::from_rgba_unmultiplied(
                 [width as usize, height as usize],
                 no_pad_buffer,
