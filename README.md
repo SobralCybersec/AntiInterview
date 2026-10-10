@@ -25,22 +25,12 @@ A local-first Windows and Linux desktop privacy tool for controlling which appli
   Demo | Privacy Control Room
 </h1>
 
-```
- Anti-Interview v1.2.0                         local-first · no backend
 
- ──────────────────────────────────────────────────────────────────────────
-   Windows / Linux windows                         ● capture control ready
- ──────────────────────────────────────────────────────────────────────────
-  ● Firefox   ● VS Code   ● AI Browser   ● Terminal       [ Refresh ]
- ──────────────────────────────────────────────────────────────────────────
-   Live preview                                                ● streaming
- ──────────────────────────────────────────────────────────────────────────
-  [x] Private notes       [ ] Browser      [x] Internal dashboard
- ──────────────────────────────────────────────────────────────────────────
-  [Hide selected] [Silent screenshot] [AI Browser] [Settings] [Tray]
 
- ▶ Selected windows remain usable locally and are excluded from capture.
-```
+<p align="center">
+  <img src="https://i.imgur.com/rMrv8Ae.png" width="600" alt="O que você vê" />
+  <img src="https://i.imgur.com/TaXoxvb.png" width="600" alt="O que eles veem" />
+</p>
 
 ---
 
